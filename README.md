@@ -65,7 +65,7 @@ C:> node hidescript.js foo.hs
 
 
 
-## 1. [文法](syntax.md)
+## 1. [文法](docs/syntax.md)
 
 
 
