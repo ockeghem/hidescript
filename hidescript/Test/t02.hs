@@ -14,3 +14,9 @@ var x = !a + b;
 
 // var x = s1 > s2 > s3;
 x = s1 > s2 > a;
+
+x = ! -x;
+x = !x || !x;
+x = -x || -x;
+
+

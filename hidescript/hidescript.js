@@ -747,7 +747,7 @@ expression = function () {
         if (type != "n") {
             syntaxError("文字列の論理ORはできません");
         }
-        if (priority < "4") {
+        if (priority > "4") {
             code = "(" + code + ")";
         }
         priority = "4";
@@ -762,7 +762,7 @@ expression = function () {
             syntaxError("文字列の論理ORはできません");
         }
         code2 = wcsmidstr(code2, 3);
-        if (priority2 <= "4") {
+        if (priority2 >= "4") {
             code2 = "(" + code2 + ")";
         }
         code = code + " || " + code2;
