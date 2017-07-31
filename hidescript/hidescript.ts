@@ -735,6 +735,7 @@ function cmpExpression(): string {
         if (wcsmidstr(code2, 1, 1) != type1) {
             syntaxError("文字列と数値の比較はできません");
         }
+        type1 = "n";
         code = code + op + wcsmidstr(code2, 3);
     }
     return priority + eType + LRvalue + code;
@@ -748,7 +749,7 @@ function logicalAnd(): string {
     var LRvalue = wcsmidstr(code, 2, 1);
     code = wcsmidstr(code, 3);
     while (symKind == symLogicalAnd) {
-        priority = "5";
+        priority = "4";
         LRvalue = "R";
         nextSym();
         var code2 = cmpExpression();
@@ -770,10 +771,10 @@ expression = function (): string {
         if (type != "n") {
             syntaxError("文字列の論理ORはできません");
         }
-        if (priority == "5") {
+        if (priority < "4") {
             code = "(" + code + ")";
         }
-        priority = "6";
+        priority = "4";
         LRvalue = "R";
     }
     while (symKind == symLogicalOr) {
@@ -785,7 +786,7 @@ expression = function (): string {
             syntaxError("文字列の論理ORはできません");
         }
         code2 = wcsmidstr(code2, 3);
-        if (priority2 == "5") {
+        if (priority2 <= "4") {
             code2 = "(" + code2 + ")";
         }
         code = code + " || " + code2;

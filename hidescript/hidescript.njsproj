@@ -4,7 +4,8 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>hidescript</Name>
     <RootNamespace>hidescript</RootNamespace>
-    <ScriptArguments>..\Test\t01.hs hidescript.ts</ScriptArguments>
+    <ScriptArguments>..\Test\t02.hs ..\Test\t01.hs hidescript.ts</ScriptArguments>
+    <Environment>hidemacrodir=.</Environment>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>

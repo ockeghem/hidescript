@@ -1,0 +1,7 @@
+﻿#a=1;
+#b=2;
+$c="a";
+#x=#a && 4 || (#b && 5);
+#x=(!#a)+#b;
+#x=$s1>$s2>#a;
+// compileAndExecute::Done
