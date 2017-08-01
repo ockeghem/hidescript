@@ -34,7 +34,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="package.json" />
-    <Content Include="README.md" />
     <TypeScriptCompile Include="hidescript.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
   </ItemGroup>
