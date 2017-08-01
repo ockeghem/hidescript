@@ -1,0 +1,33 @@
+(式)
+変数
+識別子 ( 引数並び )
+識別子 [ 式 ]
+数値リテラル
+文字列リテラル
+
+単項演算子
+- 要素
+
+演算子の優先番号（秀丸マクロ）
+
+0	1	2	3	4
+---------------------
+34	*	+	<=	&&
+a	/	-	>=	||
+	%		<	!
+	|		>
+	&		!=
+	^		==
+
+
+var symMulOp = 30;
+var symAddOp = 31;
+var symCmpOp = 32;
+var symUnaryOp = 33;
+var symBitShift = 34;
+var symBitXor = 35;
+var symBitAnd = 36;
+var symBitOr = 37;
+var symLogicalAnd = 38;
+var symLogicalOr = 39;
+

@@ -34,20 +34,18 @@ var symComma = 23;
 var symSemicolon = 24;
 var symColon = 25;
 var symAssignment = 26;
+var symLambdaOp = 27;
 
-var symSubOp = 27;
-var symUnaryOp = 28;
-// var symBinaryOp = 29;
-var symLambdaOp = 30;
-
-var symMulOp = 31;
-var symAddOp = 32;
-var symSubOp = 33;
-var symCmpOp = 34;
-var symUnaryOp = 35;
-var symLogicalAnd = 36;
-var symLogicalOr = 37;
-var symLambdaOp = 38;
+var symMulOp = 30;
+var symAddOp = 31;
+var symCmpOp = 32;
+var symUnaryOp = 33;
+var symBitShift = 34;
+var symBitXor = 35;
+var symBitAnd = 36;
+var symBitOr = 37;
+var symLogicalAnd = 38;
+var symLogicalOr = 39;
 
 var symLParen = 40;
 var symRParen = 41;
@@ -315,8 +313,9 @@ function nextSym(): void {
         }
         if (ch == '~') {
             symKind = symUnaryOp;
-            operator = "~";
+            operator = '~';
             nextChar();
+            return;
         }
         if (ch == '!') {
             ch = nextChar();
@@ -325,7 +324,8 @@ function nextSym(): void {
                 operator = "!=";
                 nextChar();
             } else {
-                syntaxError("意図しない文字があります");
+                symKind = symUnaryOp;
+                operator = '!';
             }
             return;
         }
@@ -350,27 +350,15 @@ function nextSym(): void {
             }
             return;
         }
-        if (ch == '*') {
+        if (ch == '*' || ch == '%') {
             symKind = symMulOp;
-            operator = "*";
+            operator = ch;
             nextChar();
             return;
         }
-        if (ch == '%') {
-            symKind = symMulOp;
-            operator = "%";
-            nextChar();
-            return;
-        }
-        if (ch == '+') {
+        if (ch == '+' || ch == '-') {
             symKind = symAddOp;
-            operator = "+";
-            nextChar();
-            return;
-        }
-        if (ch == "-") {
-            symKind = symSubOp;
-            operator = "-";
+            operator = ch;
             nextChar();
             return;
         }
@@ -637,7 +625,10 @@ function factor(): string {
 
 function unaryExpression(): string { // todo  -(1 + 5) みたいな場合の対処
     var ops = "";
-    while (symKind == symSubOp || symKind == symUnaryOp) {
+    var logicalNot = 0;
+    while (symKind == symAddOp || symKind == symUnaryOp) {
+        if (operator == '!')
+            logicalNot = 1;
         var ops = ops + operator;
         nextSym();
     }
@@ -646,13 +637,17 @@ function unaryExpression(): string { // todo  -(1 + 5) みたいな場合の対�
     var type1 = wcsmidstr(code, 1, 1);
     var LRvalue = wcsmidstr(code, 2, 1);
     code = wcsmidstr(code, 3);
-    if (symKind ==  symUnaryOp && type1 != "n") {
+    if (symKind ==  symUnaryOp && type1 != "n")
         syntaxError("数値型が必要です");
+    if (ops != "" && priority > "1")
+        code = ops + "(" + code + ")";
+    else
+        code = ops + code;
+    if (logicalNot) {
+        // code = "(" + code + ")";
+        priority = "5";
     }
-    if (ops != "" && priority > "1") {
-        code = "(" + code + ")";
-    }
-    return priority + type1 + LRvalue + ops + code;
+    return priority + type1 + LRvalue + code;
 }
 
 function term(): string {
@@ -693,8 +688,8 @@ function simpleExpression(): string {
     var LRvalue = wcsmidstr(code, 2, 1);
     code = wcsmidstr(code, 3);
 
-    if (symKind == symAddOp || symKind == symSubOp) {
-        if (symKind == symSubOp && type != "n") {
+    if (symKind == symAddOp) {
+        if (operator == "-" && type != "n") {
             syntaxError("文字列の引き算はできません");
         }
         if (priority > "3") {
@@ -703,7 +698,7 @@ function simpleExpression(): string {
         priority = "3";
         LRvalue = "R";
     }
-    while (symKind == symAddOp || symKind == symSubOp) {
+    while (symKind == symAddOp) {
         var op = operator;
         /***
         if (op == "-" && type == "s") {
@@ -740,6 +735,7 @@ function cmpExpression(): string {
         if (wcsmidstr(code2, 1, 1) != type1) {
             syntaxError("文字列と数値の比較はできません");
         }
+        type1 = "n";
         code = code + op + wcsmidstr(code2, 3);
     }
     return priority + eType + LRvalue + code;
@@ -753,7 +749,7 @@ function logicalAnd(): string {
     var LRvalue = wcsmidstr(code, 2, 1);
     code = wcsmidstr(code, 3);
     while (symKind == symLogicalAnd) {
-        priority = "5";
+        priority = "4";
         LRvalue = "R";
         nextSym();
         var code2 = cmpExpression();
@@ -775,10 +771,10 @@ expression = function (): string {
         if (type != "n") {
             syntaxError("文字列の論理ORはできません");
         }
-        if (priority == "5") {
+        if (priority > "4") {
             code = "(" + code + ")";
         }
-        priority = "6";
+        priority = "4";
         LRvalue = "R";
     }
     while (symKind == symLogicalOr) {
@@ -786,11 +782,11 @@ expression = function (): string {
         var code2 = logicalAnd();
         var priority2 = wcsmidstr(code2, 0, 1);
         var type2 = wcsmidstr(code2, 1, 1);
-        code2 = wcsmidstr(code2, 3);
         if (type2 != "n") {
             syntaxError("文字列の論理ORはできません");
         }
-        if (priority2 == "5") {
+        code2 = wcsmidstr(code2, 3);
+        if (priority2 >= "4") {
             code2 = "(" + code2 + ")";
         }
         code = code + " || " + code2;
@@ -1221,7 +1217,7 @@ function wcsleftstr(s: string, n1: number): string {
 }
 
 function endmacro(): void {
-    process.exit(0);
+    process.exit(1);
 }
 
 function str(n: number): string {
