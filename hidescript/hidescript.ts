@@ -4,11 +4,11 @@
  * if / while の条件の型判定（整数型であることのチェック）
  * a["xxx"] = 1; が通る。配列の添字は数値のみ
  * 全体的に void 型のチェックが甘い
+ * 二項演算子の型のチェックがない
  *
  * 改善項目
  * constを実装してもよいのでは?
  *
- * 二項演算子の型のチェックがない … 済
  * コメント … 済
  */
 var symNew = 0;
@@ -1088,9 +1088,7 @@ statement = function (): void {
         continueStatement();
     } else if (symKind == symLCurlyBrace) {
         nextSym();
-        // genCode(" { ");              // todo 試験的に削除中 2017/06/18
         statementList(symRCurlyBrace);
-        // genCode(" } ");              // todo 試験的に削除中 2017/06/18
         nextSym();
     } else {
          syntaxError("予期しない文です")
