@@ -31,3 +31,55 @@ var symBitOr = 37;
 var symLogicalAnd = 38;
 var symLogicalOr = 39;
 
+var operators: string[] = new Array();
+var opPriority: number[] = new Array();
+
+operators[0] = "*"; opPriority[0] = 1;
+operators[1] = "/"; opPriority[1] = 1;
+operators[2] = "%"; opPriority[2] = 1;
+
+operators[3] = "+"; opPriority[3] = 2;
+operators[4] = "-"; opPriority[4] = 2;
+
+operators[5] = "<"; opPriority[5] = 3;
+operators[6] = "<="; opPriority[6] = 3;
+operators[7] = ">"; opPriority[7] = 3;
+operators[8] = ">="; opPriority[8] = 3;
+
+operators[9] = "=="; opPriority[9] = 4;
+operators[10] = "!="; opPriority[10] = 4;
+
+operators[11] = "&"; opPriority[11] = 5;
+operators[12] = "^"; opPriority[12] = 6;
+operators[13] = "|"; opPriority[13] = 7;
+operators[14] = "&&"; opPriority[14] = 8;
+operators[15] = "||"; opPriority[15] = 9;
+
+var opStart = 0;
+var opEnd = 15;
+
+
+    /***
+    var priority = wcsmidstr(code, 0, 1);
+    var type = wcsmidstr(code, 1, 1);
+    var LRvalue = wcsmidstr(code, 2, 1);
+    code = wcsmidstr(code, 3);
+    if (symKind == symBinaryOp || symKind == symAddOp) {
+        // if (type != "n") {
+        //     syntaxError("数値型が必要です");
+        // }
+        if (priority > "2") {
+            code = "(" + code + ")";
+        }
+        priority = "2";
+        LRvalue = "R";
+    }***/
+
+
+        // if (wcsmidstr(code2, 1, 1) != "n") {
+        //     syntaxError("数値型が必要です");
+        // }
+        // if (wcsmidstr(code2, 0, 1) > "2") {
+        //     code = "(" + code + ")";
+        // }
+        // code = code + op + wcsmidstr(code2, 3);

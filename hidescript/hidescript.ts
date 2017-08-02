@@ -4,11 +4,11 @@
  * if / while の条件の型判定（整数型であることのチェック）
  * a["xxx"] = 1; が通る。配列の添字は数値のみ
  * 全体的に void 型のチェックが甘い
+ * 二項演算子の型のチェックがない
  *
  * 改善項目
  * constを実装してもよいのでは?
  *
- * 二項演算子の型のチェックがない … 済
  * コメント … 済
  */
 var symNew = 0;
@@ -36,16 +36,9 @@ var symColon = 25;
 var symAssignment = 26;
 var symLambdaOp = 27;
 
-var symMulOp = 30;
-var symAddOp = 31;
-var symCmpOp = 32;
-var symUnaryOp = 33;
-var symBitShift = 34;
-var symBitXor = 35;
-var symBitAnd = 36;
-var symBitOr = 37;
-var symLogicalAnd = 38;
-var symLogicalOr = 39;
+var symUnaryOp = 30;
+var symBinaryOp = 32;
+var symAddOp = 33;
 
 var symLParen = 40;
 var symRParen = 41;
@@ -76,6 +69,36 @@ keyword[symDummy] = "$$dummy";
 
 var keywordStart = symNew;
 var keywordEnd = symDummy;
+
+var operators: string[] = new Array();
+var opPriority: number[] = new Array();
+var hidePriority: string[] = new Array();
+
+//                      opPriority == 1 は、++ や -- のために予約
+
+operators[0] = "*";     opPriority[0] = 2;   hidePriority[0] = "1";
+operators[1] = "/";     opPriority[1] = 2;   hidePriority[1] = "1";
+operators[2] = "%";     opPriority[2] = 2;   hidePriority[2] = "1";
+
+operators[3] = "+";     opPriority[3] = 3;   hidePriority[3] = "2";
+operators[4] = "-";     opPriority[4] = 3;   hidePriority[4] = "2";
+
+operators[5] = "<";     opPriority[5] = 4;   hidePriority[5] = "3";
+operators[6] = "<=";    opPriority[6] = 4;   hidePriority[6] = "3";
+operators[7] = ">";     opPriority[7] = 4;   hidePriority[7] = "3";
+operators[8] = ">=";    opPriority[8] = 4;   hidePriority[8] = "3";
+
+operators[9] = "==";    opPriority[9] = 5;   hidePriority[9] = "3";
+operators[10] = "!=";   opPriority[10] = 5;  hidePriority[10] = "3";
+
+operators[11] = "&";    opPriority[11] = 6;  hidePriority[11] = "1";
+operators[12] = "^";    opPriority[12] = 7;  hidePriority[12] = "1";
+operators[13] = "|";    opPriority[13] = 8;  hidePriority[13] = "1";
+operators[14] = "&&";   opPriority[14] = 9;  hidePriority[14] = "4";
+operators[15] = "||";   opPriority[15] = 10; hidePriority[15] = "4";
+
+var opStart = 0;
+var opEnd = 15;
 
 var ch = "";
 var srcText: string;
@@ -141,7 +164,6 @@ registerBuiltinFunction("wcsleftstr", "ssn");
 registerBuiltinFunction("wcslen", "ns");
 registerBuiltinFunction("wcsmidstr", "ssnn");
 registerBuiltinFunction("wcsstrrstr", "nss");
-
 
 
 function syntaxError(msg: string) {
@@ -210,7 +232,7 @@ function nextSym(): void {
                 }
                 continue;
             } else {
-                symKind = symMulOp;
+                symKind = symBinaryOp;
                 operator = "/";
                 return;
             }
@@ -281,7 +303,7 @@ function nextSym(): void {
         if (ch == '=') {
             nextChar();
             if (ch == '=') {
-                symKind = symCmpOp;                
+                symKind = symBinaryOp;                
                 operator = "==";
                 nextChar();
             } else if (ch == '>') {
@@ -294,7 +316,7 @@ function nextSym(): void {
         if (ch == '&') {
             nextChar();
             if (ch == '&') {
-                symKind = symLogicalAnd;
+                symKind = symBinaryOp;
                 operator = "&&";
                 nextChar();
             } else
@@ -304,7 +326,7 @@ function nextSym(): void {
         if (ch == '|') {
             nextChar();
             if (ch == '|') {
-                symKind = symLogicalOr;
+                symKind = symBinaryOp;
                 operator = "||";
                 nextChar();
             } else
@@ -320,7 +342,7 @@ function nextSym(): void {
         if (ch == '!') {
             ch = nextChar();
             if (ch == '=') {
-                symKind = symCmpOp;
+                symKind = symBinaryOp;
                 operator = "!=";
                 nextChar();
             } else {
@@ -330,7 +352,7 @@ function nextSym(): void {
             return;
         }
         if (ch == '>') {
-            symKind = symCmpOp;
+            symKind = symBinaryOp;
             ch = nextChar();
             if (ch == '=') {
                 operator = ">=";
@@ -340,7 +362,7 @@ function nextSym(): void {
             return;
         }
         if (ch == '<') {
-            symKind = symCmpOp;
+            symKind = symBinaryOp;
             ch = nextChar();
             if (ch == '=') {
                 operator = "<=";
@@ -351,7 +373,7 @@ function nextSym(): void {
             return;
         }
         if (ch == '*' || ch == '%') {
-            symKind = symMulOp;
+            symKind = symBinaryOp;
             operator = ch;
             nextChar();
             return;
@@ -432,12 +454,17 @@ function dumpIdents(): void {
 }
 
 var tempCode = "";
+var nTempVars = 0;
+var nTempLable = 0;
+var currentBreakLabel = -1;
+var currentContinueLabel = -1;
 
 function genTempCode(): void {
     if (tempCode > "") { 
         insert(tempCode + "\n");
         tempCode = "";
     }
+    nTempVars = 0;  // todo 試験的に実装
 }
 
 function genCode(code: string): void {
@@ -463,6 +490,7 @@ function popTempCode(): string {
     return code;
 }
 
+// 以下はexpressionとstatementの前方宣言
 var expression: () => string;
 var statement: () => void;
 
@@ -495,17 +523,12 @@ function genVar(pos: number): string {
         while (symKind == symLBracket) {
             nextSym();
             var code2 = expression();
-            code = code + "[" + wcsmidstr(code2, 3) + "]";       // todo code2の型チェック
+            code = code + "[" + wcsmidstr(code2, 3) + "]";       // todo code2が数値であることのチェック
             checkSym(symRBracket, "]");
         }
     }
     return code;
 }
-
-var nTempVars = 0;
-var nTempLable = 0;
-var currentBreakLabel = -1;
-var currentContinueLabel = -1;
 
 function getTempLabels(n: number) {
     var L = nTempLable;
@@ -517,7 +540,7 @@ function validLabel(n: number): boolean {
     return n >= 0;
 }
 
-// 関数呼び出し用の一時変数を生成する。現状は右辺値のみとする
+// 関数呼び出し用の一時変数を生成する。右辺値
 //
 function genTempVar(type: string): string {
     var varname = "_" + str(nTempVars);
@@ -643,156 +666,99 @@ function unaryExpression(): string { // todo  -(1 + 5) みたいな場合の対�
         code = ops + "(" + code + ")";
     else
         code = ops + code;
-    if (logicalNot) {
-        // code = "(" + code + ")";
+    if (logicalNot)
         priority = "5";
-    }
     return priority + type1 + LRvalue + code;
 }
 
-function term(): string {
-    var code = unaryExpression();
-    var priority = wcsmidstr(code, 0, 1);
-    var type = wcsmidstr(code, 1, 1);
-    var LRvalue = wcsmidstr(code, 2, 1);
-    code = wcsmidstr(code, 3);
-    if (symKind == symMulOp) {
-        if (type != "n") {
-            syntaxError("数値型が必要です");
-        }
-        if (priority > "2") {
-            code = "(" + code + ")";
-        }
-        priority = "2";
-        LRvalue = "R";
+function getOpPriority(op: string) : number {
+    var p = 0;
+    while (p <= opEnd) {
+        if (operators[p] == op)
+            return opPriority[p];
+        p = p + 1;
     }
-    while (symKind == symMulOp) {
-        var op = operator;
-        nextSym();
-        var code2 = unaryExpression();
-        if (wcsmidstr(code2, 1, 1) != "n") {
-            syntaxError("数値型が必要です");
-        }
-        if (wcsmidstr(code2, 0, 1) > "2") {
-            code = "(" + code + ")";
-        }
-        code = code + op + wcsmidstr(code2, 3);
-    }
-    return priority + type + LRvalue + code;
+    syntaxError("演算子の優先順位が見つかりません（コンパイラのバグ?）");
 }
 
-function simpleExpression(): string {
-    var code = term();
-    var priority = wcsmidstr(code, 0, 1);
-    var type = wcsmidstr(code, 1, 1);
-    var LRvalue = wcsmidstr(code, 2, 1);
-    code = wcsmidstr(code, 3);
-
-    if (symKind == symAddOp) {
-        if (operator == "-" && type != "n") {
-            syntaxError("文字列の引き算はできません");
-        }
-        if (priority > "3") {
-            code = "(" + code + ")";
-        }
-        priority = "3";
-        LRvalue = "R";
+function getHidePriority(op: string): string {
+    var p = 0;
+    while (p <= opEnd) {
+        if (operators[p] == op)
+            return hidePriority[p];
+        p = p + 1;
     }
-    while (symKind == symAddOp) {
-        var op = operator;
-        /***
-        if (op == "-" && type == "s") {
-            syntaxError("文字列の引き算はできません");
-        }
-        ***/
-        nextSym();
-        var code2 = term();
-        if (wcsmidstr(code2 , 1, 1) != type) {
+    syntaxError("演算子の秀丸マクロ上の優先順位が見つかりません（コンパイラのバグ?）");
+}
+
+function checkBinOpType(op: string, type1: string, type2: string): string {
+    var etype = type1;
+    if (op == "+") {
+        if (type1 != type2)
             syntaxError("文字列と数値の足し算はできません");
-        }
-        if (wcsmidstr(code2, 0, 1) > "3") {
-            code = "(" + code + ")";
-        }
-        code = code + op + wcsmidstr(code2, 3);
-    }
-    return priority + type + LRvalue + code;
-}
-
-function cmpExpression(): string {
-    var code = simpleExpression();
-    var priority = wcsmidstr(code, 0, 1);
-    var type1 = wcsmidstr(code, 1, 1);
-    var eType = type1;
-    var LRvalue = wcsmidstr(code, 2, 1);
-    code = wcsmidstr(code, 3);
-    while (symKind == symCmpOp) {
-        priority = "4";
-        eType = "n";        // 文字列の比較の場合、式の型は数値になるための処理
-        LRvalue = "R";
-        var op = operator;
-        nextSym();
-        var code2 = simpleExpression();
-        if (wcsmidstr(code2, 1, 1) != type1) {
+    } else if (op == "==" || op == "!=" || op == ">" || op == ">=" || op == "<" || op == "<=") {
+        if (type1 != type2)
             syntaxError("文字列と数値の比較はできません");
-        }
-        type1 = "n";
-        code = code + op + wcsmidstr(code2, 3);
+        etype = "n";
+    } else {
+        if (type1 != "n" || type2 != "n")
+            syntaxError("数値型が必要です");
+        etype = "n";
     }
-    return priority + eType + LRvalue + code;
+    return etype;
 }
 
-function logicalAnd(): string {
-    var code = cmpExpression();
-    var priority = wcsmidstr(code, 0, 1);
-    var type1 = wcsmidstr(code, 1, 1);
-    var eType = type1;
-    var LRvalue = wcsmidstr(code, 2, 1);
-    code = wcsmidstr(code, 3);
-    while (symKind == symLogicalAnd) {
-        priority = "4";
-        LRvalue = "R";
-        nextSym();
-        var code2 = cmpExpression();
-        if (type1 != "n" || wcsmidstr(code2, 1, 1) != "n") {
-            syntaxError("文字列の論理ANDはできません");
-        }
-        code = code + " && " + wcsmidstr(code2, 3);
-    }
-    return priority + eType + LRvalue + code;
+function genBianryOp(code1: string, op: string, code2: string): string {
+    var opPriority = getHidePriority(op);
+
+    var priority1 = wcsmidstr(code1, 0, 1);
+    var type1 = wcsmidstr(code1, 1, 1);
+    // var LRvalue1 = wcsmidstr(code1, 2, 1);
+    code1 = wcsmidstr(code1, 3);
+
+    var priority2 = wcsmidstr(code2, 0, 1);
+    var type2 = wcsmidstr(code2, 1, 1);
+    // var LRvalue2 = wcsmidstr(code2, 2, 1);
+    code2 = wcsmidstr(code2, 3);
+    var etype = checkBinOpType(op, type1, type2);
+    if (priority1 > opPriority || ((priority1 == "4") && (opPriority == "4")) )
+        code1 = "(" + code1 + ")";
+    if (priority2 >= opPriority)
+        code2 = "(" + code2 + ")";
+
+    return opPriority + etype + "R" + code1 + op + code2;
 }
 
 expression = function (): string {
-    var code = logicalAnd();
-    var priority = wcsmidstr(code, 0, 1);
-    var type = wcsmidstr(code, 1, 1);
-    var LRvalue = wcsmidstr(code, 2, 1);
-    code = wcsmidstr(code, 3);
-    if (symKind == symLogicalOr) {
-        if (type != "n") {
-            syntaxError("文字列の論理ORはできません");
-        }
-        if (priority > "4") {
-            code = "(" + code + ")";
-        }
-        priority = "4";
-        LRvalue = "R";
-    }
-    while (symKind == symLogicalOr) {
+    var code = unaryExpression();
+    var stack: string[] = new Array();
+    var sp = 0;
+
+    stack[sp] = code; sp = sp + 1; // push
+
+    while (symKind == symBinaryOp || symKind == symAddOp) {
+        var op = operator;
         nextSym();
-        var code2 = logicalAnd();
-        var priority2 = wcsmidstr(code2, 0, 1);
-        var type2 = wcsmidstr(code2, 1, 1);
-        if (type2 != "n") {
-            syntaxError("文字列の論理ORはできません");
+        if (sp >= 3) {
+            var op1 = stack[sp - 2];
+            var op1pri = getOpPriority(op1);
+            var op2pri = getOpPriority(op);
+            if (op1pri <= op2pri) {  // reduce
+                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1])
+                sp = sp - 2;
+            }
         }
-        code2 = wcsmidstr(code2, 3);
-        if (priority2 >= "4") {
-            code2 = "(" + code2 + ")";
-        }
-        code = code + " || " + code2;
+        stack[sp] = op; sp = sp + 1; // push(op);
+        var code2 = unaryExpression();
+        stack[sp] = code2; sp = sp + 1; // push(code2);
     }
-    return priority + type + LRvalue + code;
-}
+    var n = 0;
+    while (sp >= 3) {
+        stack[sp - 3] = genBianryOp(stack[sp - 3], stack[sp - 2], stack[sp - 1]);
+        sp = sp - 2;
+    }
+    return stack[0];
+};
 
 function parameter(n: number): string {
     var paramName = ident;
@@ -912,7 +878,6 @@ function assignmentExpression(): void {
         else
             code = code + ";";
         genCode(code);
-        var dummy = 1;
     }
     return;
 }
@@ -1120,16 +1085,14 @@ statement = function (): void {
         continueStatement();
     } else if (symKind == symLCurlyBrace) {
         nextSym();
-        // genCode(" { ");              // todo 試験的に削除中 2017/06/18
         statementList(symRCurlyBrace);
-        // genCode(" } ");              // todo 試験的に削除中 2017/06/18
         nextSym();
     } else {
-         syntaxError("予期しない文です")
+        syntaxError("予期しない文です")
     }
     if (symKind == symSemicolon)
         nextSym();
-}
+};
 
 var outBuffer = "";
 
@@ -1205,7 +1168,8 @@ function macrodir(): string {
 }
 
 function message(msg: string): void {
-    insert(msg + "\n");
+    // insert(msg + "\n");
+    console.log(msg);
 }
 
 function wcsmidstr(s: string, n1: number, n2: number = 327670000): string {
@@ -1213,7 +1177,7 @@ function wcsmidstr(s: string, n1: number, n2: number = 327670000): string {
 }
 
 function wcsleftstr(s: string, n1: number): string {
-    return s.substr(0, 1);
+    return s.substr(0, n1);
 }
 
 function endmacro(): void {
