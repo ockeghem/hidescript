@@ -65,15 +65,12 @@ C:> node hidescript.js foo.hs
 
 
 
-## 1. [文法](docs/syntax.md)
+[文法](docs/syntax.md) はこちら
 
 
 
 <!---
 ![ダミー](images/dumm.png "サンプル")
--->
-
-
 
 vartype
 
@@ -82,4 +79,4 @@ n 数値型（スカラ）
 S 文字列配列
 N 数値配列
 
-
+-->
