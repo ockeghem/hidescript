@@ -26,6 +26,7 @@ var symDo = 11;
 var symBreak = 12;
 var symContinue = 13;
 var symDummy = 14;
+
 var symDigit = 20;
 var symStringLiteral = 21;
 var symIdent = 22;
@@ -34,9 +35,11 @@ var symSemicolon = 24;
 var symColon = 25;
 var symAssignment = 26;
 var symLambdaOp = 27;
+
 var symUnaryOp = 30;
 var symBinaryOp = 32;
 var symAddOp = 33;
+
 var symLParen = 40;
 var symRParen = 41;
 var symLCurlyBrace = 42;
@@ -44,8 +47,10 @@ var symRCurlyBrace = 43;
 var symLBracket = 44;
 var symRBracket = 45;
 var symEOF = 46;
-var keyword = new Array();
-var symTable = new Array();
+
+var keyword: string[] = new Array();
+var symTable: string[] = new Array();
+
 keyword[symNew] = "new";
 keyword[symVar] = "var";
 keyword[symNumber] = "number";
@@ -61,81 +66,61 @@ keyword[symDo] = "do";
 keyword[symBreak] = "break";
 keyword[symContinue] = "continue";
 keyword[symDummy] = "$$dummy";
+
 var keywordStart = symNew;
 var keywordEnd = symDummy;
-var operators = new Array();
-var opPriority = new Array();
-var hidePriority = new Array();
+
+var operators: string[] = new Array();
+var opPriority: number[] = new Array();
+var hidePriority: string[] = new Array();
+
 //                      opPriority == 1 は、++ や -- のために予約
-operators[0] = "*";
-opPriority[0] = 2;
-hidePriority[0] = "1";
-operators[1] = "/";
-opPriority[1] = 2;
-hidePriority[1] = "1";
-operators[2] = "%";
-opPriority[2] = 2;
-hidePriority[2] = "1";
-operators[3] = "+";
-opPriority[3] = 3;
-hidePriority[3] = "2";
-operators[4] = "-";
-opPriority[4] = 3;
-hidePriority[4] = "2";
-operators[5] = "<";
-opPriority[5] = 4;
-hidePriority[5] = "3";
-operators[6] = "<=";
-opPriority[6] = 4;
-hidePriority[6] = "3";
-operators[7] = ">";
-opPriority[7] = 4;
-hidePriority[7] = "3";
-operators[8] = ">=";
-opPriority[8] = 4;
-hidePriority[8] = "3";
-operators[9] = "==";
-opPriority[9] = 5;
-hidePriority[9] = "3";
-operators[10] = "!=";
-opPriority[10] = 5;
-hidePriority[10] = "3";
-operators[11] = "&";
-opPriority[11] = 6;
-hidePriority[11] = "1";
-operators[12] = "^";
-opPriority[12] = 7;
-hidePriority[12] = "1";
-operators[13] = "|";
-opPriority[13] = 8;
-hidePriority[13] = "1";
-operators[14] = "&&";
-opPriority[14] = 9;
-hidePriority[14] = "4";
-operators[15] = "||";
-opPriority[15] = 10;
-hidePriority[15] = "4";
+
+operators[0] = "*";     opPriority[0] = 2;   hidePriority[0] = "1";
+operators[1] = "/";     opPriority[1] = 2;   hidePriority[1] = "1";
+operators[2] = "%";     opPriority[2] = 2;   hidePriority[2] = "1";
+
+operators[3] = "+";     opPriority[3] = 3;   hidePriority[3] = "2";
+operators[4] = "-";     opPriority[4] = 3;   hidePriority[4] = "2";
+
+operators[5] = "<";     opPriority[5] = 4;   hidePriority[5] = "3";
+operators[6] = "<=";    opPriority[6] = 4;   hidePriority[6] = "3";
+operators[7] = ">";     opPriority[7] = 4;   hidePriority[7] = "3";
+operators[8] = ">=";    opPriority[8] = 4;   hidePriority[8] = "3";
+
+operators[9] = "==";    opPriority[9] = 5;   hidePriority[9] = "3";
+operators[10] = "!=";   opPriority[10] = 5;  hidePriority[10] = "3";
+
+operators[11] = "&";    opPriority[11] = 6;  hidePriority[11] = "1";
+operators[12] = "^";    opPriority[12] = 7;  hidePriority[12] = "1";
+operators[13] = "|";    opPriority[13] = 8;  hidePriority[13] = "1";
+operators[14] = "&&";   opPriority[14] = 9;  hidePriority[14] = "4";
+operators[15] = "||";   opPriority[15] = 10; hidePriority[15] = "4";
+
 var opStart = 0;
 var opEnd = 15;
+
 var ch = "";
-var srcText;
-var symKind;
-var operator; // 演算子 ">=" 等
-var ident; // 識別子
-var digitValue; // 数値
-var stringValue; // 文字列リテラル
+var srcText: string;
+var symKind: number;
+var operator: string;  // 演算子 ">=" 等
+var ident: string;  // 識別子
+var digitValue: number; // 数値
+var stringValue: string;  // 文字列リテラル
+
 // 以下は識別子情報
 var currentLevel = 0;
-var identsName = new Array();
-var identsType = new Array();
-var identsLevel = new Array();
+var identsName: string[] = new Array();
+var identsType: string[] = new Array();
+var identsLevel: number[] = new Array();
 var nIdents = 0;
-var currentFuncType; // 現在の関数の型 s n v のいずれか
-/*
+var currentFuncType: string;    // 現在の関数の型 s n v のいずれか
+
+/* 
  * typeName : n .. number  s .. string   f .. function
  *
  */
-function register(varName, typeName, level) {
+function register(varName: string, typeName: string, level: number): number {
     identsName[nIdents] = varName;
     identsType[nIdents] = typeName;
     identsLevel[nIdents] = level;
@@ -143,9 +128,12 @@ function register(varName, typeName, level) {
     nIdents = nIdents + 1;
     return retval;
 }
-function registerBuiltinFunction(name, types) {
+
+function registerBuiltinFunction(name: string, types: string): void {
     register(name, "F" + types, 0);
 }
+
+
 // 以下、組み込み関数の宣言
 //
 registerBuiltinFunction("basename", "s");
@@ -160,12 +148,14 @@ registerBuiltinFunction("insert", "vs");
 registerBuiltinFunction("macrodir", "s");
 registerBuiltinFunction("message", "vs");
 registerBuiltinFunction("openfile", "vs");
+
 registerBuiltinFunction("selectall", "v");
 registerBuiltinFunction("selendx", "n");
 registerBuiltinFunction("selendy", "n");
 registerBuiltinFunction("seltopx", "n");
 registerBuiltinFunction("seltopy", "n");
 registerBuiltinFunction("setactivehidemaru", "vn");
+
 registerBuiltinFunction("str", "sn");
 registerBuiltinFunction("tickcount", "n");
 registerBuiltinFunction("val", "ns");
@@ -174,27 +164,35 @@ registerBuiltinFunction("wcsleftstr", "ssn");
 registerBuiltinFunction("wcslen", "ns");
 registerBuiltinFunction("wcsmidstr", "ssnn");
 registerBuiltinFunction("wcsstrrstr", "nss");
-function syntaxError(msg) {
+
+
+function syntaxError(msg: string) {
     message(msg);
     message(wcsmidstr(srcText, 0, 100));
     symKind = symEOF;
     endmacro();
 }
-function isAlpha(ch) {
-    return (ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z");
+
+
+function isAlpha(ch: string): boolean {
+	return (ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z");
 }
-function isAlnum(ch) {
+
+function isAlnum(ch: string): boolean {
     return (ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9");
 }
-function isDigit(ch) {
-    return (ch >= "0" && ch <= "9");
+
+function isDigit(ch: string): boolean {
+	return (ch >= "0" && ch <= "9");	
 }
-function nextChar() {
+
+function nextChar(): string {       // 次の一文字を取得
     ch = wcsmidstr(srcText, 0, 1);
     srcText = wcsmidstr(srcText, 1);
     return ch;
 }
-function nextSym() {
+
+function nextSym(): void {
     var oldSym = symKind;
     while (1) {
         while (ch == " " || ch == "\t" || ch == "\r" || ch == "\n") {
@@ -206,7 +204,7 @@ function nextSym() {
         }
         if (ch == '/') {
             nextChar();
-            if (ch == "/") {
+            if (ch == "/") {        // //形式のコメント
                 var term = "";
                 do {
                     ch = nextChar();
@@ -217,27 +215,23 @@ function nextSym() {
                     }
                 } while (ch != '\n' && ch != "");
                 continue;
-            }
-            else if (ch == "*") {
+            } else if (ch == "*") { // /* ... */ 形式のコメント
                 nextChar();
                 while (1) {
                     if (ch == "") {
                         syntaxError("コメントが閉じられないままEOFに達しました");
                         return;
-                    }
-                    else if (ch == '*') {
+                    } else if (ch == '*') {
                         nextChar();
                         if (ch == '/') {
                             nextChar();
                             break;
                         }
-                    }
-                    else
+                    } else
                         nextChar();
                 }
                 continue;
-            }
-            else {
+            } else {
                 symKind = symBinaryOp;
                 operator = "/";
                 return;
@@ -249,7 +243,7 @@ function nextSym() {
                 s = s + ch;
                 nextChar();
             } while (isAlnum(ch) || ch == "_");
-            var i = keywordStart;
+            var i = keywordStart
             while (i <= keywordEnd) {
                 if (keyword[i] == s) {
                     symKind = i;
@@ -259,6 +253,7 @@ function nextSym() {
                 }
                 i = i + 1;
             }
+
             ident = s;
             symKind = symIdent;
             return;
@@ -308,15 +303,13 @@ function nextSym() {
         if (ch == '=') {
             nextChar();
             if (ch == '=') {
-                symKind = symBinaryOp;
+                symKind = symBinaryOp;                
                 operator = "==";
                 nextChar();
-            }
-            else if (ch == '>') {
+            } else if (ch == '>') {
                 symKind = symLambdaOp;
                 nextChar();
-            }
-            else
+            } else
                 symKind = symAssignment;
             return;
         }
@@ -326,8 +319,7 @@ function nextSym() {
                 symKind = symBinaryOp;
                 operator = "&&";
                 nextChar();
-            }
-            else
+            } else
                 syntaxError("意図しない文字があります");
             return;
         }
@@ -337,8 +329,7 @@ function nextSym() {
                 symKind = symBinaryOp;
                 operator = "||";
                 nextChar();
-            }
-            else
+            } else
                 syntaxError("意図しない文字があります");
             return;
         }
@@ -354,8 +345,7 @@ function nextSym() {
                 symKind = symBinaryOp;
                 operator = "!=";
                 nextChar();
-            }
-            else {
+            } else {
                 symKind = symUnaryOp;
                 operator = '!';
             }
@@ -367,8 +357,7 @@ function nextSym() {
             if (ch == '=') {
                 operator = ">=";
                 nextChar();
-            }
-            else
+            } else
                 operator = ">";
             return;
         }
@@ -378,8 +367,7 @@ function nextSym() {
             if (ch == '=') {
                 operator = "<=";
                 nextChar();
-            }
-            else {
+            } else {
                 operator = "<";
             }
             return;
@@ -430,19 +418,22 @@ function nextSym() {
         return;
     }
 }
-function initCompiler(text) {
+
+function initCompiler(text: string): void {
     srcText = text;
     nextChar();
-    nextSym();
+	nextSym();
 }
-function checkSym(sym, symStr) {
+
+function checkSym(sym: number, symStr: string) {
     if (symKind == sym) {
         nextSym();
         return;
     }
     syntaxError(symStr + 'が必要です');
 }
-function searchIdent(varName) {
+
+function searchIdent(varName: string): number {
     var i = nIdents - 1;
     while (i >= 0) {
         if (identsName[i] == varName)
@@ -451,7 +442,8 @@ function searchIdent(varName) {
     }
     return -1;
 }
-function dumpIdents() {
+
+function dumpIdents(): void {
     insert("// --------------------\n");
     var i = 0;
     while (i < nIdents) {
@@ -460,66 +452,69 @@ function dumpIdents() {
     }
     insert("// --------------------\n");
 }
+
 var tempCode = "";
 var nTempVars = 0;
 var nTempLable = 0;
 var currentBreakLabel = -1;
 var currentContinueLabel = -1;
-function genTempCode() {
-    if (tempCode > "") {
+
+function genTempCode(): void {
+    if (tempCode > "") { 
         insert(tempCode + "\n");
         tempCode = "";
     }
-    nTempVars = 0; // todo 試験的に実装
+    nTempVars = 0;  // todo 試験的に
 }
-function genCode(code) {
+
+function genCode(code: string): void {
     genTempCode();
     insert(code + "\n");
 }
-function genReturnVar(type) {
+
+function genReturnVar(type: string): string {
     if (type == "s") {
         return "$$return";
-    }
-    else {
+    } else {
         return "##return";
     }
 }
-function pushTempCode(code) {
+
+function pushTempCode(code: string): void {
     tempCode = tempCode + code;
 }
-function popTempCode() {
+
+function popTempCode(): string {
     var code = tempCode;
     tempCode = "";
     return code;
 }
+
 // 以下はexpressionとstatementの前方宣言
-var expression;
-var statement;
-function genVar(pos) {
+var expression: () => string;
+var statement: () => void;
+
+function genVar(pos: number): string {
     var varType = wcsmidstr(identsType[pos], 0, 1);
     var typeChar = varType;
     var varPrefix = "$";
     var array = 0;
     if (typeChar == "n") {
         varPrefix = "#";
-    }
-    else if (typeChar == "S") {
+    } else if (typeChar == "S") {
         array = 1;
         typeChar = "s";
-    }
-    else if (typeChar == "N") {
+    } else if (typeChar == "N") {
         array = 1;
         typeChar = "n";
         varPrefix = "#";
     }
-    var code;
+    var code: string;
     if (identsLevel[pos] == 0) {
         code = "0" + typeChar + "L" + varPrefix + identsName[pos];
-    }
-    else if (identsLevel[pos] < 0) {
+    } else if (identsLevel[pos] < 0) {
         code = "0" + typeChar + "L" + varPrefix + varPrefix + str(-identsLevel[pos]);
-    }
-    else {
+    } else {
         code = "0" + typeChar + "L" + varPrefix + varPrefix + identsName[pos];
     }
     if (array) {
@@ -528,43 +523,46 @@ function genVar(pos) {
         while (symKind == symLBracket) {
             nextSym();
             var code2 = expression();
-            code = code + "[" + wcsmidstr(code2, 3) + "]"; // todo code2が数値であることのチェック
+            code = code + "[" + wcsmidstr(code2, 3) + "]";       // todo code2が数値であることのチェック
             checkSym(symRBracket, "]");
         }
     }
     return code;
 }
-function getTempLabels(n) {
+
+
+
+function getTempLabels(n: number) {
     var L = nTempLable;
     nTempLable = nTempLable + n;
     return L;
 }
-function validLabel(n) {
+
+function validLabel(n: number): boolean {
     return n >= 0;
 }
+
 // 関数呼び出し用の一時変数を生成する。右辺値
 //
-function genTempVar(type) {
+function genTempVar(type: string): string {
     var varname = "_" + str(nTempVars);
     nTempVars = nTempVars + 1;
     if (type == "s") {
         if (currentLevel == 0) {
             return "0sR$" + varname;
-        }
-        else {
+        } else {
             return "0sR$$" + varname;
         }
-    }
-    else {
+    } else {
         if (currentLevel == 0) {
             return "0nR#" + varname;
-        }
-        else {
+        } else {
             return "0nR##" + varname;
         }
     }
 }
-function variableOrFunctionCall() {
+
+function variableOrFunctionCall(): string {
     var pos = searchIdent(ident);
     if (pos < 0) {
         syntaxError(ident + "が見つかりません");
@@ -573,8 +571,7 @@ function variableOrFunctionCall() {
     var type = wcsmidstr(identsType[pos], 0, 1);
     if (type == "s" || type == "S" || type == "n" || type == "N") {
         return genVar(pos);
-    }
-    else if (type == "f" || type == "x") {
+    } else if (type == "f" || type == "x") {
         if (type == "x" && symKind != symLParen)
             return genVar(pos);
         var funcType = wcsmidstr(identsType[pos], 1, 1);
@@ -583,7 +580,7 @@ function variableOrFunctionCall() {
         if (symKind != symRParen) {
             while (1) {
                 var codeParam = expression();
-                code = code + " " + wcsmidstr(codeParam, 3); // todo 型チェック
+                code = code + " " + wcsmidstr(codeParam, 3);    // todo 型チェック
                 if (symKind != symComma)
                     break;
                 code = code + ",";
@@ -595,10 +592,9 @@ function variableOrFunctionCall() {
         var tempVar = genTempVar(funcType);
         pushTempCode(wcsmidstr(tempVar, 3) + "=" + genReturnVar(funcType) + ";");
         return tempVar;
-    }
-    else if (type == "F") {
+    } else if (type == "F") {   // 秀丸組み込み関数
         var funcType = wcsmidstr(identsType[pos], 1, 1);
-        var code;
+        var code: string;
         var funcName = identsName[pos];
         if (wcsleftstr(funcName, 1) == "_") {
             funcName = wcsmidstr(funcName, 1);
@@ -624,37 +620,35 @@ function variableOrFunctionCall() {
             code = code + ")";
         checkSym(symRParen, ')');
         return "0" + funcType + "R" + code;
-    }
-    else {
-        syntaxError("不正な識別子です（コンパイラのバグ?）");
+    } else {
+        syntaxError("不正な識別子です（コンパイラのバグ?）")
     }
 }
-function factor() {
-    if (symKind == symLParen) {
+
+function factor(): string {
+    if (symKind == symLParen) { 
         nextSym();
         var code = expression();
         var priority = wcsmidstr(code, 0, 1);
         checkSym(symRParen, ")");
+
         return wcsmidstr(code, 0, 2) + "R" + wcsmidstr(code, 3);
-    }
-    else if (symKind == symIdent) {
+    } else if (symKind == symIdent) {
         return variableOrFunctionCall();
-    }
-    else if (symKind == symDigit) {
+    } else if (symKind == symDigit) {
         var dValue = digitValue;
         nextSym();
         return "0nR" + str(dValue);
-    }
-    else if (symKind == symStringLiteral) {
+    } else if (symKind == symStringLiteral) {
         var sValue = stringValue;
         nextSym();
         return '0sR\"' + sValue + '\"';
-    }
-    else {
+    } else {
         syntaxError("識別子か数値が必要です");
     }
 }
-function unaryExpression() {
+
+function unaryExpression(): string { // todo  -(1 + 5) みたいな場合の対処
     var ops = "";
     var logicalNot = 0;
     while (symKind == symAddOp || symKind == symUnaryOp) {
@@ -668,7 +662,7 @@ function unaryExpression() {
     var type1 = wcsmidstr(code, 1, 1);
     var LRvalue = wcsmidstr(code, 2, 1);
     code = wcsmidstr(code, 3);
-    if (symKind == symUnaryOp && type1 != "n")
+    if (symKind ==  symUnaryOp && type1 != "n")
         syntaxError("数値型が必要です");
     if (ops != "" && priority > "1")
         code = ops + "(" + code + ")";
@@ -678,7 +672,8 @@ function unaryExpression() {
         priority = "5";
     return priority + type1 + LRvalue + code;
 }
-function getOpPriority(op) {
+
+function getOpPriority(op: string) : number {
     var p = 0;
     while (p <= opEnd) {
         if (operators[p] == op)
@@ -687,7 +682,8 @@ function getOpPriority(op) {
     }
     syntaxError("演算子の優先順位が見つかりません（コンパイラのバグ?）");
 }
-function getHidePriority(op) {
+
+function getHidePriority(op: string): string {
     var p = 0;
     while (p <= opEnd) {
         if (operators[p] == op)
@@ -696,47 +692,52 @@ function getHidePriority(op) {
     }
     syntaxError("演算子の秀丸マクロ上の優先順位が見つかりません（コンパイラのバグ?）");
 }
-function checkBinOpType(op, type1, type2) {
+
+function checkBinOpType(op: string, type1: string, type2: string): string {
     var etype = type1;
     if (op == "+") {
         if (type1 != type2)
             syntaxError("文字列と数値の足し算はできません");
-    }
-    else if (op == "==" || op == "!=" || op == ">" || op == ">=" || op == "<" || op == "<=") {
+    } else if (op == "==" || op == "!=" || op == ">" || op == ">=" || op == "<" || op == "<=") {
         if (type1 != type2)
             syntaxError("文字列と数値の比較はできません");
         etype = "n";
-    }
-    else {
+    } else {
         if (type1 != "n" || type2 != "n")
             syntaxError("数値型が必要です");
         etype = "n";
     }
     return etype;
 }
-function genBianryOp(code1, op, code2) {
+
+function genBianryOp(code1: string, op: string, code2: string): string {
     var opPriority = getHidePriority(op);
+
     var priority1 = wcsmidstr(code1, 0, 1);
     var type1 = wcsmidstr(code1, 1, 1);
     // var LRvalue1 = wcsmidstr(code1, 2, 1);
     code1 = wcsmidstr(code1, 3);
+
     var priority2 = wcsmidstr(code2, 0, 1);
     var type2 = wcsmidstr(code2, 1, 1);
     // var LRvalue2 = wcsmidstr(code2, 2, 1);
     code2 = wcsmidstr(code2, 3);
     var etype = checkBinOpType(op, type1, type2);
-    if (priority1 > opPriority || ((priority1 == "4") && (opPriority == "4")))
+    if (priority1 > opPriority)
         code1 = "(" + code1 + ")";
     if (priority2 >= opPriority)
         code2 = "(" + code2 + ")";
+
     return opPriority + etype + "R" + code1 + op + code2;
 }
-expression = function () {
+
+expression = function (): string {
     var code = unaryExpression();
-    var stack = new Array();
+    var stack: string[] = new Array();
     var sp = 0;
-    stack[sp] = code;
-    sp = sp + 1; // push
+
+    stack[sp] = code;  sp = sp + 1; // push
+    
     while (symKind == symBinaryOp || symKind == symAddOp) {
         var op = operator;
         nextSym();
@@ -744,16 +745,14 @@ expression = function () {
             var op1 = stack[sp - 2];
             var op1pri = getOpPriority(op1);
             var op2pri = getOpPriority(op);
-            if (op1pri <= op2pri) {
-                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1]);
+            if (op1pri <= op2pri) {  // reduce
+                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1]) 
                 sp = sp - 2;
             }
         }
-        stack[sp] = op;
-        sp = sp + 1; // push(op);
+        stack[sp] = op; sp = sp + 1; // push(op);
         var code2 = unaryExpression();
-        stack[sp] = code2;
-        sp = sp + 1; // push(code2);
+        stack[sp] = code2; sp = sp + 1; // push(code2);
     }
     var n = 0;
     while (sp >= 3) {
@@ -761,26 +760,26 @@ expression = function () {
         sp = sp - 2;
     }
     return stack[0];
-};
-function parameter(n) {
+}
+
+function parameter(n: number): string {
     var paramName = ident;
     var type = "";
     checkSym(symIdent, "識別子");
     checkSym(symColon, ":");
     if (symKind == symNumber) {
         type = "n";
-    }
-    else if (symKind == symString) {
+    } else if (symKind == symString) {
         type = "s";
-    }
-    else {
+    } else {
         syntaxError("型名が必要です");
     }
     register(paramName, type, -n);
     nextSym();
     return type;
 }
-function parameterList() {
+
+function parameterList(): string {
     var n = 1;
     var paramTypes = "";
     while (1) {
@@ -792,12 +791,14 @@ function parameterList() {
     }
     return paramTypes;
 }
-function statementList(endSym) {
+
+function statementList(endSym: number): void {
     while (symKind != endSym) {
         statement();
     }
 }
-function defFunction(funcName) {
+
+function defFunction(funcName: string): void {
     var funcPos = 0;
     var funcType = "fv";
     var funcTypeFw = "";
@@ -807,15 +808,14 @@ function defFunction(funcName) {
         checkSym(symIdent, "識別子");
         funcName = ident;
         funcPos = register(funcName, funcType, 0);
-    }
-    else {
+    } else {
         funcPos = searchIdent(funcName);
         funcTypeFw = identsType[funcPos];
     }
     genCode("goto _end_" + funcName);
     genCode(funcName + ":");
     currentFuncType = "v"; // 関数の戻り値型を指定しない場合のデフォルトはvoidとする
-    var saveNIdents = nIdents; // 識別子の個数を保存しておく
+    var saveNIdents = nIdents;  // 識別子の個数を保存しておく
     checkSym(symLParen, "(");
     var paramTypes = "";
     if (symKind == symIdent) {
@@ -826,32 +826,33 @@ function defFunction(funcName) {
         nextSym();
         if (symKind == symVoid) {
             // 何もしない
-        }
-        else if (symKind == symNumber) {
+        } else if (symKind == symNumber) {
             funcType = "fn";
             currentFuncType = "n";
-        }
-        else if (symKind == symString) {
+        } else if (symKind == symString) {
             funcType = "fs";
             currentFuncType = "s";
-        }
-        else {
+        } else {
             syntaxError("型名が必要です");
         }
         nextSym(); // 型名の読み飛ばし
     }
     funcType = funcType + paramTypes;
+
     identsType[funcPos] = funcType; // forwardでない場合
-    currentLevel = 1; // レベルをローカル（関数の中）とする
+
+    currentLevel = 1;  // レベルをローカル（関数の中）とする
     checkSym(symLCurlyBrace, "{");
-    statementList(symRCurlyBrace); // 関数の実体
+    statementList(symRCurlyBrace);  // 関数の実体
     checkSym(symRCurlyBrace, "}");
-    nIdents = saveNIdents; // 識別子の個数を戻す（ローカル変数をテーブルから削除）
-    currentLevel = 0; // レベルをグローバルに戻す
+    nIdents = saveNIdents;  // 識別子の個数を戻す（ローカル変数をテーブルから削除）
+    currentLevel = 0;  // レベルをグローバルに戻す
     genCode("return;");
     genCode("_end_" + funcName + ":");
+
 }
-function assignmentExpression() {
+
+function assignmentExpression(): void {
     var code = factor();
     var type1 = wcsmidstr(code, 1, 1);
     var LRvalue = wcsmidstr(code, 2, 1);
@@ -863,8 +864,7 @@ function assignmentExpression() {
         if (symKind == symFunction) {
             nextSym();
             defFunction(wcsmidstr(code, 1));
-        }
-        else {
+        } else {
             var code2 = expression();
             if (wcsmidstr(code2, 1, 1) != type1) {
                 syntaxError("文字列と数値の型が異なる代入はできません");
@@ -872,8 +872,7 @@ function assignmentExpression() {
             code = code + "=" + wcsmidstr(code2, 3);
             genCode(code + ";");
         }
-    }
-    else {
+    } else {
         // ここは単なる関数呼び出しの場合なので、関数呼び出しは tempとして出力されている。戻り値の値は生成する必要はない
         // ↑ この想定は間違いだった。戻り値のない関数呼び出しは違う?
         if (type1 != "v")
@@ -884,12 +883,12 @@ function assignmentExpression() {
     }
     return;
 }
-function checkType() {
-    var typeName;
+
+function checkType(): string {
+    var typeName: string;
     if (symKind == symNumber) {
         typeName = "n";
-    }
-    else {
+    } else {
         typeName = "s";
     }
     nextSym();
@@ -897,25 +896,24 @@ function checkType() {
         nextSym();
         if (typeName == "n") {
             typeName = "NL";
-        }
-        else {
+        } else {
             typeName = "SL";
         }
         checkSym(symRBracket, "]");
         if (symKind == symAssignment) {
             nextSym();
-            checkSym(symNew, "new");
-            checkSym(symIdent, "Array"); // todo "Array" という識別子であることのチェックが漏れている
+            checkSym(symNew, "new")
+            checkSym(symIdent, "Array");    // todo "Array" という識別子であることのチェックが漏れている
             checkSym(symLParen, "(");
             checkSym(symRParen, ")");
         }
-    }
-    else {
+    } else {
         typeName = typeName + "L";
     }
     return typeName;
 }
-function checkFunction() {
+
+function checkFunction(): string {
     var paramTypes = "";
     nextSym(); // ( の読み飛ばし
     if (symKind == symIdent) {
@@ -923,58 +921,57 @@ function checkFunction() {
     }
     checkSym(symRParen, ")");
     checkSym(symLambdaOp, "=>");
-    var funcType;
+
+    var funcType: string;
     if (symKind == symVoid) {
         funcType = "xv";
-    }
-    else if (symKind == symNumber) {
+    } else if (symKind == symNumber) {
         funcType = "xn";
-    }
-    else if (symKind == symString) {
+    } else if (symKind == symString) {
         funcType = "xs";
-    }
-    else {
+    } else {
         syntaxError("型名が必要です");
     }
     nextSym(); // 型名の読み飛ばし
+
     return funcType + paramTypes;
 }
-function varStatement() {
+
+function varStatement() : void {
     checkSym(symIdent, "識別子");
     var varName = ident;
-    if (symKind == symColon) {
+    if(symKind == symColon) {
         nextSym();
         if (symKind == symNumber || symKind == symString) {
             var typeName = checkType();
             register(varName, typeName, currentLevel);
-        }
-        else if (symKind == symLParen) {
+        } else if (symKind == symLParen) {
             var typeName = checkFunction();
             register(varName, typeName, currentLevel);
-        }
-        else {
+        } else {
             syntaxError('型名が必要です');
         }
-    }
-    else if (symKind == symAssignment) {
+    } else if (symKind == symAssignment) {
         nextSym();
         var code1 = expression();
         typeName = wcsmidstr(code1, 1, 1);
         var pos = register(varName, typeName, currentLevel);
         var code2 = genVar(pos);
-        genCode(wcsmidstr(code2, 3) + "=" + wcsmidstr(code1, 3) + ";"); // todo 左辺の型チェックが抜けている
-    }
-    else {
+        genCode(wcsmidstr(code2, 3) + "=" + wcsmidstr(code1, 3) + ";");       // todo 左辺の型チェックが抜けている
+    } else {
         syntaxError('式またはコロンが必要です');
     }
 }
-function getLabel(n) {
+
+function getLabel(n: number): string {
     return "_LL" + str(n);
 }
-function genLabel(n) {
-    genCode(getLabel(n) + ":");
+
+function genLabel(n: number): void {
+    genCode(getLabel(n) + ":")
 }
-function ifStatement() {
+
+function ifStatement(): void {
     checkSym(symLParen, "(");
     var cmpCode = expression();
     checkSym(symRParen, ")");
@@ -987,32 +984,37 @@ function ifStatement() {
     }
     genCode("}");
 }
-function whileStatement() {
+
+function whileStatement(): void {
     var saveBreakLabel = currentBreakLabel;
     var saveContinueLabel = currentContinueLabel;
     var label = getTempLabels(3);
     currentBreakLabel = label + 2;
     currentContinueLabel = label + 1;
     genCode("goto " + getLabel(currentContinueLabel));
+
     checkSym(symLParen, "(");
     var cmpCode = expression(); // todo: 式の型をチェックしていない…真偽値を得る関数を作ってもいいかも
-    var tempCode = popTempCode();
-    checkSym(symRParen, ")");
+    var tempCode = popTempCode();    checkSym(symRParen, ")");
+
     genLabel(label); // ループの戻り
     statement();
     genLabel(label + 1); // continue用ラベル
+
     pushTempCode(tempCode);
     genCode("if (" + wcsmidstr(cmpCode, 3) + ") goto " + getLabel(label));
     genLabel(label + 2); // break用ラベル
     currentBreakLabel = saveBreakLabel;
     currentContinueLabel = saveContinueLabel;
 }
-function doStatement() {
+
+function doStatement(): void {
     var saveBreakLabel = currentBreakLabel;
     var saveContinueLabel = currentContinueLabel;
     var label = getTempLabels(3);
     currentBreakLabel = label + 2;
     currentContinueLabel = label + 1;
+
     genLabel(label); // ループの戻り
     statement();
     genLabel(label + 1); // continue用ラベル
@@ -1025,93 +1027,88 @@ function doStatement() {
     currentBreakLabel = saveBreakLabel;
     currentContinueLabel = saveContinueLabel;
 }
-function returnStatement() {
-    if (symKind == symSemicolon) {
+
+function returnStatement(): void { // todo 関数の型と戻り値の型の適合チェックが抜けている
+    if (symKind == symSemicolon) { // 式なしの return
         if (currentFuncType != "v")
             syntaxError("returnの後に式が必要です");
         genCode("return;");
-    }
-    else {
+    } else { // セミコロン以外の場合は式がくると想定
         var code = expression();
         genCode("return " + wcsmidstr(code, 3) + ";");
     }
     return;
 }
-function breakStatement() {
+
+function breakStatement(): void {
     if (validLabel(currentBreakLabel)) {
         genCode("goto " + getLabel(currentBreakLabel));
-    }
-    else {
+    } else {
         syntaxError("breakできません");
     }
     return;
 }
-function continueStatement() {
+
+function continueStatement(): void {
     if (validLabel(currentContinueLabel)) {
         genCode("goto " + getLabel(currentContinueLabel));
-    }
-    else {
+    } else {
         syntaxError("continueできません");
     }
     return;
 }
-statement = function () {
+
+statement = function (): void {
     if (symKind == symVar) {
         nextSym();
         varStatement();
-    }
-    else if (symKind == symIdent) {
+    } else if (symKind == symIdent) {
         assignmentExpression();
-    }
-    else if (symKind == symFunction) {
+    } else if (symKind == symFunction) {
         nextSym();
         defFunction("");
-    }
-    else if (symKind == symIf) {
+    } else if (symKind == symIf) {
         nextSym();
         ifStatement();
-    }
-    else if (symKind == symWhile) {
+    } else if (symKind == symWhile) {
         nextSym();
         whileStatement();
-    }
-    else if (symKind == symDo) {
+    } else if (symKind == symDo) {
         nextSym();
         doStatement();
-    }
-    else if (symKind == symReturn) {
+    } else if (symKind == symReturn) {
         nextSym();
         returnStatement();
-    }
-    else if (symKind == symBreak) {
+    } else if (symKind == symBreak) {
         nextSym();
         breakStatement();
-    }
-    else if (symKind == symContinue) {
+    } else if (symKind == symContinue) {
         nextSym();
         continueStatement();
-    }
-    else if (symKind == symLCurlyBrace) {
+    } else if (symKind == symLCurlyBrace) {
         nextSym();
         statementList(symRCurlyBrace);
         nextSym();
-    }
-    else {
-        syntaxError("予期しない文です");
+    } else {
+         syntaxError("予期しない文です")
     }
     if (symKind == symSemicolon)
         nextSym();
-};
+}
+
 var outBuffer = "";
-function compile(src) {
+
+function compile(src: string): string {
     initCompiler(src);
     statementList(symEOF);
     insert('// compileAndExecute::Done\n');
     return outBuffer;
 }
+
 if (version() > 0) {
     selectall();
     var sx = gettext(seltopx(), seltopy(), selendx(), selendy());
+
     var filebase = basename();
     if (filebase == "") {
         message("まずセーブして下さい");
@@ -1123,8 +1120,7 @@ if (version() > 0) {
     var winno = findhidemaru(filename);
     if (winno == -1) {
         openfile(filename);
-    }
-    else {
+    } else {
         setactivehidemaru(winno);
     }
     selectall();
@@ -1139,101 +1135,128 @@ if (version() > 0) {
     insert("// t1 : " + str(t1) + "  t2 : " + str(t2) + "  diff = " + str(t2 - t1) + "\n");
     enabledraw();
 }
+
 //EOF  これ以降は TypeScript + Node.js のコードが自由に書ける
-var path = require('path');
-var fs = require('fs');
+const path = require('path');
+const fs = require('fs');
 var argv = process.argv;
-var srcfile = argv[2]; // ソースファイル名
+var srcfile = argv[2];      // ソースファイル名
 var ext = path.extname(srcfile);
 var fname = path.basename(srcfile, ext);
-var outfile = path.format({ dir: macrodir(), name: fname, ext: ".mac" }); // 出力ファイルの組み立て
+var outfile = path.format({ dir: macrodir(), name: fname, ext: ".mac" });  // 出力ファイルの組み立て
+
 try {
     var src = fs.readFileSync(srcfile, 'utf8');
     var label = 'compile-time';
     console.time(label);
+
     var out = compile(src);
+
     console.timeEnd(label);
+
     // String.fromCharCode(0xFEFF) はBOM
     fs.writeFileSync(outfile, String.fromCharCode(0xFEFF) + out, 'utf8');
-}
-catch (err) {
+} catch (err) {
     message(err.message);
 }
 process.exit(0);
-function macrodir() {
-    var hidemacrodir = process.env.hidemacrodir; // 秀丸マクロのディレクトリを環境変数から受け取る
+
+function macrodir(): string {
+    var hidemacrodir = process.env.hidemacrodir;　　// 秀丸マクロのディレクトリを環境変数から受け取る
     if (typeof hidemacrodir === "undefined") {
-        hidemacrodir = "."; // 環境変数が未定義の場合はカレントディレクトリに出力する
+        hidemacrodir = ".";  // 環境変数が未定義の場合はカレントディレクトリに出力する
     }
     return hidemacrodir;
 }
-function message(msg) {
+
+function message(msg: string): void {
     // insert(msg + "\n");
     console.log(msg);
 }
-function wcsmidstr(s, n1, n2) {
-    if (n2 === void 0) { n2 = 327670000; }
+
+function wcsmidstr(s: string, n1: number, n2: number = 327670000): string {
     return s.substr(n1, n2);
 }
-function wcsleftstr(s, n1) {
+
+function wcsleftstr(s: string, n1: number): string {
     return s.substr(0, n1);
 }
-function endmacro() {
+
+function endmacro(): void {
     process.exit(1);
 }
-function str(n) {
+
+function str(n: number): string {
     return n.toString();
 }
-function val(s) {
+
+function val(s: string): number {
     return parseInt(s, 10);
 }
-function wcslen(s) {
+
+function wcslen(s: string): number {
     return s.length;
 }
-function insert(s) {
+
+function insert(s: string): void {
     outBuffer = outBuffer + s;
     // console.log(s.replace(/\r?\n/g, ""));
 }
-function wcsstrrstr(a, b) {
+
+function wcsstrrstr(a: string, b: string): number {
     return 0;
 } // dummy 実装した方がよい
-function version() {
+
+function version() : number {
     return 0;
 }
-function gettext(x1, y1, x2, y2) {
+
+function gettext(x1: number, y1: number, x2: number, y2: number): string {
     return "";
 } // dummy
-function selectall() {
+
+function selectall(): void {
 } // dummy
-function seltopx() {
+
+function seltopx(): number {
     return 0;
 } // dummy
-function seltopy() {
+
+function seltopy(): number {
     return 0;
 } // dummy
-function selendx() {
+
+function selendx(): number {
     return 0;
 } // dummy
-function selendy() {
+
+function selendy(): number {
     return 0;
 } // dummy
-function basename() {
+
+function basename(): string {
     return "";
 } // dummy
-function findhidemaru(filename) {
+
+function findhidemaru(filename : string): number {
     return 0;
 } // dummy
-function openfile(filename) {
+
+function openfile(filename: string): void {
 } // dummy
-function setactivehidemaru(winno) {
+
+function setactivehidemaru(winno: number): void {
 } // dummy
-function _delete() {
+
+function _delete(): void {
 } // dummy
-function disabledraw() {
+
+function disabledraw(): void {
 } // dummy
-function enabledraw() {
+
+function enabledraw(): void {
 } // dummy
-function tickcount() {
+
+function tickcount(): number {
     return 0;
 } // dummy
-//# sourceMappingURL=hidescript.js.map

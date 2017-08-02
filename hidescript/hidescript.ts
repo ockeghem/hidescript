@@ -170,7 +170,6 @@ function syntaxError(msg: string) {
     message(msg);
     message(wcsmidstr(srcText, 0, 100));
     symKind = symEOF;
-    // var x = outBuffer;  // todo delete (for debug)
     endmacro();
 }
 
@@ -455,12 +454,17 @@ function dumpIdents(): void {
 }
 
 var tempCode = "";
+var nTempVars = 0;
+var nTempLable = 0;
+var currentBreakLabel = -1;
+var currentContinueLabel = -1;
 
 function genTempCode(): void {
     if (tempCode > "") { 
         insert(tempCode + "\n");
         tempCode = "";
     }
+    nTempVars = 0;  // todo 試験的に実装
 }
 
 function genCode(code: string): void {
@@ -486,6 +490,7 @@ function popTempCode(): string {
     return code;
 }
 
+// 以下はexpressionとstatementの前方宣言
 var expression: () => string;
 var statement: () => void;
 
@@ -518,17 +523,12 @@ function genVar(pos: number): string {
         while (symKind == symLBracket) {
             nextSym();
             var code2 = expression();
-            code = code + "[" + wcsmidstr(code2, 3) + "]";       // todo code2の型チェック
+            code = code + "[" + wcsmidstr(code2, 3) + "]";       // todo code2が数値であることのチェック
             checkSym(symRBracket, "]");
         }
     }
     return code;
 }
-
-var nTempVars = 0;
-var nTempLable = 0;
-var currentBreakLabel = -1;
-var currentContinueLabel = -1;
 
 function getTempLabels(n: number) {
     var L = nTempLable;
@@ -540,7 +540,7 @@ function validLabel(n: number): boolean {
     return n >= 0;
 }
 
-// 関数呼び出し用の一時変数を生成する。現状は右辺値のみとする
+// 関数呼び出し用の一時変数を生成する。右辺値
 //
 function genTempVar(type: string): string {
     var varname = "_" + str(nTempVars);
@@ -666,19 +666,16 @@ function unaryExpression(): string { // todo  -(1 + 5) みたいな場合の対�
         code = ops + "(" + code + ")";
     else
         code = ops + code;
-    if (logicalNot) {
-        // code = "(" + code + ")";
+    if (logicalNot)
         priority = "5";
-    }
     return priority + type1 + LRvalue + code;
 }
 
 function getOpPriority(op: string) : number {
     var p = 0;
     while (p <= opEnd) {
-        if (operators[p] == op) {
+        if (operators[p] == op)
             return opPriority[p];
-        }
         p = p + 1;
     }
     syntaxError("演算子の優先順位が見つかりません（コンパイラのバグ?）");
@@ -687,9 +684,8 @@ function getOpPriority(op: string) : number {
 function getHidePriority(op: string): string {
     var p = 0;
     while (p <= opEnd) {
-        if (operators[p] == op) {
+        if (operators[p] == op)
             return hidePriority[p];
-        }
         p = p + 1;
     }
     syntaxError("演算子の秀丸マクロ上の優先順位が見つかりません（コンパイラのバグ?）");
@@ -725,7 +721,7 @@ function genBianryOp(code1: string, op: string, code2: string): string {
     // var LRvalue2 = wcsmidstr(code2, 2, 1);
     code2 = wcsmidstr(code2, 3);
     var etype = checkBinOpType(op, type1, type2);
-    if (priority1 > opPriority)
+    if (priority1 > opPriority || ((priority1 == "4") && (opPriority == "4")) )
         code1 = "(" + code1 + ")";
     if (priority2 >= opPriority)
         code2 = "(" + code2 + ")";
@@ -738,8 +734,8 @@ expression = function (): string {
     var stack: string[] = new Array();
     var sp = 0;
 
-    stack[sp] = code;  sp = sp + 1; // push
-    
+    stack[sp] = code; sp = sp + 1; // push
+
     while (symKind == symBinaryOp || symKind == symAddOp) {
         var op = operator;
         nextSym();
@@ -748,30 +744,21 @@ expression = function (): string {
             var op1pri = getOpPriority(op1);
             var op2pri = getOpPriority(op);
             if (op1pri <= op2pri) {  // reduce
-                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1]) 
+                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1])
                 sp = sp - 2;
             }
-            var dummy = 1;
         }
         stack[sp] = op; sp = sp + 1; // push(op);
         var code2 = unaryExpression();
         stack[sp] = code2; sp = sp + 1; // push(code2);
     }
     var n = 0;
-    /***
-    console.log("-------------------------");
-    while (n < sp) {
-        console.log(stack[n]);
-        n = n + 1;
-    }
-    console.log("-------------------------");
-    ***/
     while (sp >= 3) {
         stack[sp - 3] = genBianryOp(stack[sp - 3], stack[sp - 2], stack[sp - 1]);
         sp = sp - 2;
     }
     return stack[0];
-}
+};
 
 function parameter(n: number): string {
     var paramName = ident;
@@ -891,7 +878,6 @@ function assignmentExpression(): void {
         else
             code = code + ";";
         genCode(code);
-        var dummy = 1;
     }
     return;
 }
@@ -1102,11 +1088,11 @@ statement = function (): void {
         statementList(symRCurlyBrace);
         nextSym();
     } else {
-         syntaxError("予期しない文です")
+        syntaxError("予期しない文です")
     }
     if (symKind == symSemicolon)
         nextSym();
-}
+};
 
 var outBuffer = "";
 
@@ -1191,7 +1177,7 @@ function wcsmidstr(s: string, n1: number, n2: number = 327670000): string {
 }
 
 function wcsleftstr(s: string, n1: number): string {
-    return s.substr(0, 1);
+    return s.substr(0, n1);
 }
 
 function endmacro(): void {
