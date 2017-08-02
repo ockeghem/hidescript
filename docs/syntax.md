@@ -1,23 +1,23 @@
-# ���@�i����d�l�j
+# 文法（言語仕様）
 
 
-## �ϐ�
+## 変数
 
-�����^�ƕ�����^�̒P���ϐ��i�X�J���j����єz�񂪗��p�\�ł��B�ϐ��ɂ͌^������܂��B�ϐ��̐錾���Ɍ^�𖾎����邩�A�������ɂ��ԐړI�Ɍ^���w�肷��K�v������܂��B
+整数型と文字列型の単純変数（スカラ）および配列が利用可能です。変数には型があります。変数の宣言時に型を明示するか、初期化により間接的に型を指定する必要があります。
 
 ```
-var n : number;  // �����^�̒P���ϐ�
-var k = foo() + 1; // foo()�͐�����Ԃ��֐��Ƃ���ƁAk �������^�̕ϐ��ƂȂ�
-var s : string;  // ������^�̕ϐ�
-var s = "I have a pen!";   // �������ς݂̔z��^�ϐ�
-var a1 : number[];  // �����^�̔z��ϐ�
-var a2 : number[] = new Array();   // ����BTypeScript�Ƃ��Ă����삳���������͂��̋L�q�Ƃ���
-var a3 : string[];  // ������̔z��ϐ�
-var a4 : string[] = new Array();   // ����BTypeScript�Ƃ��Ă����삳���������͂��̋L�q�Ƃ���
+var n : number;  // 整数型の単純変数
+var k = foo() + 1; // foo()は整数を返す関数とすると、k も整数型の変数となる
+var s : string;  // 文字列型の変数
+var s = "I have a pen!";   // 初期化済みの配列型変数
+var a1 : number[];  // 整数型の配列変数
+var a2 : number[] = new Array();   // 同上。TypeScriptとしても動作させたい時はこの記述とする
+var a3 : string[];  // 文字列の配列変数
+var a4 : string[] = new Array();   // 同上。TypeScriptとしても動作させたい時はこの記述とする
 ```
 
-���L�́A�ϐ��̏G�X�N���v�g�ƏG�ۃ}�N���̊֌W�������T���v���ł��B
-�܂��́A�G�X�N���v�g
+下記は、変数の秀スクリプトと秀丸マクロの関係を示すサンプルです。
+まずは、秀スクリプト
 
 ```
 var k = 1;
@@ -28,7 +28,7 @@ var a2 : string[];
 a2[3] = "bar";
 ```
 
-�G�ۃ}�N���ւ̃R���p�C�����ʂ͉��L�̒ʂ�B
+秀丸マクロへのコンパイル結果は下記の通り。
 
 ```
 #k=1;
@@ -37,11 +37,14 @@ $s="foo";
 $a2[3]="bar";
 ```
 
-## ��
-TypeScript�Ɠ����悤�Ȏ����g���܂��B
+## 式
+TypeScriptと同じような式が使えます。
 
-###���Z�q�ꗗ
+### 演算子一覧
 
-|�D�揇��|��������|���Z�q|����|
-|:---------------||:---------------|:---------------|:---------------|
-|1|��|-<br>+|�P���}�C�i�X<br>�P���v���X|
+|優先順位|結合方向|演算子|説明|
+|:---------------|:---------------|:---------------|:---------------|
+|1|←|-<br>+|単項マイナス<br>単項プラス|
+
+
+
