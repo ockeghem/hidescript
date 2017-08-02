@@ -69,7 +69,7 @@ C:> node hidescript.js foo.hs
 
 
 
-![エビフライトライアングル](images/Jjwsc.jpg "サンプル")
+![ダミー](images/dumm.png "サンプル")
 
 
 
