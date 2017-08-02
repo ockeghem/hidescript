@@ -33,8 +33,8 @@ fact:
 	return;
 _end_fact:
 
-call fact  5;#_1=##return;
-#f=#_1;
+call fact  5;#_0=##return;
+#f=#_0;
 message  str( #f);
 ```
 
@@ -65,18 +65,5 @@ C:> node hidescript.js foo.hs
 
 
 
-[文法](docs/syntax.md) はこちら
+# [文法](docs/syntax.md) はこちら
 
-
-
-<!---
-![ダミー](images/dumm.png "サンプル")
-
-vartype
-
-s 文字列型（スカラ）
-n 数値型（スカラ）
-S 文字列配列
-N 数値配列
-
--->

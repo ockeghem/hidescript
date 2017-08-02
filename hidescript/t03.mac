@@ -1,9 +1,0 @@
-﻿#n=5;
-call foo  #n;#_0=##return;
-#x=#_0;
-goto _end_foo
-foo:
-return 1;
-return;
-_end_foo:
-// compileAndExecute::Done
