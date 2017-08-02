@@ -37,16 +37,6 @@ var symLambdaOp = 27;
 var symUnaryOp = 30;
 var symBinaryOp = 32;
 var symAddOp = 33;
-/**
-var symMulOp = 30;
-var symCmpOp = 32;
-var symBitShift = 34;
-var symBitXor = 35;
-var symBitAnd = 36;
-var symBitOr = 37;
-var symLogicalAnd = 38;
-var symLogicalOr = 39;
-*/
 var symLParen = 40;
 var symRParen = 41;
 var symLCurlyBrace = 42;
@@ -76,53 +66,54 @@ var keywordEnd = symDummy;
 var operators = new Array();
 var opPriority = new Array();
 var hidePriority = new Array();
+//                      opPriority == 1 は、++ や -- のために予約
 operators[0] = "*";
-opPriority[0] = 1;
+opPriority[0] = 2;
 hidePriority[0] = "1";
 operators[1] = "/";
-opPriority[1] = 1;
+opPriority[1] = 2;
 hidePriority[1] = "1";
 operators[2] = "%";
-opPriority[2] = 1;
+opPriority[2] = 2;
 hidePriority[2] = "1";
 operators[3] = "+";
-opPriority[3] = 2;
+opPriority[3] = 3;
 hidePriority[3] = "2";
 operators[4] = "-";
-opPriority[4] = 2;
+opPriority[4] = 3;
 hidePriority[4] = "2";
 operators[5] = "<";
-opPriority[5] = 3;
+opPriority[5] = 4;
 hidePriority[5] = "3";
 operators[6] = "<=";
-opPriority[6] = 3;
+opPriority[6] = 4;
 hidePriority[6] = "3";
 operators[7] = ">";
-opPriority[7] = 3;
+opPriority[7] = 4;
 hidePriority[7] = "3";
 operators[8] = ">=";
-opPriority[8] = 3;
+opPriority[8] = 4;
 hidePriority[8] = "3";
 operators[9] = "==";
-opPriority[9] = 4;
+opPriority[9] = 5;
 hidePriority[9] = "3";
 operators[10] = "!=";
-opPriority[10] = 4;
+opPriority[10] = 5;
 hidePriority[10] = "3";
 operators[11] = "&";
-opPriority[11] = 5;
+opPriority[11] = 6;
 hidePriority[11] = "1";
 operators[12] = "^";
-opPriority[12] = 6;
+opPriority[12] = 7;
 hidePriority[12] = "1";
 operators[13] = "|";
-opPriority[13] = 7;
+opPriority[13] = 8;
 hidePriority[13] = "1";
 operators[14] = "&&";
-opPriority[14] = 8;
+opPriority[14] = 9;
 hidePriority[14] = "4";
 operators[15] = "||";
-opPriority[15] = 9;
+opPriority[15] = 10;
 hidePriority[15] = "4";
 var opStart = 0;
 var opEnd = 15;
@@ -187,7 +178,7 @@ function syntaxError(msg) {
     message(msg);
     message(wcsmidstr(srcText, 0, 100));
     symKind = symEOF;
-    var x = outBuffer; // todo delete (for debug)
+    // var x = outBuffer;  // todo delete (for debug)
     endmacro();
 }
 function isAlpha(ch) {
@@ -708,21 +699,40 @@ function getHidePriority(op) {
     }
     syntaxError("演算子の秀丸マクロ上の優先順位が見つかりません（コンパイラのバグ?）");
 }
+function checkBinOpType(op, type1, type2) {
+    var etype = type1;
+    if (op == "+") {
+        if (type1 != type2)
+            syntaxError("文字列と数値の足し算はできません");
+    }
+    else if (op == "==" || op == "!=" || op == ">" || op == ">=" || op == "<" || op == "<=") {
+        if (type1 != type2)
+            syntaxError("文字列と数値の比較はできません");
+        etype = "n";
+    }
+    else {
+        if (type1 != "n" || type2 != "n")
+            syntaxError("数値型が必要です");
+        etype = "n";
+    }
+    return etype;
+}
 function genBianryOp(code1, op, code2) {
     var opPriority = getHidePriority(op);
     var priority1 = wcsmidstr(code1, 0, 1);
     var type1 = wcsmidstr(code1, 1, 1);
-    var LRvalue1 = wcsmidstr(code1, 2, 1);
+    // var LRvalue1 = wcsmidstr(code1, 2, 1);
     code1 = wcsmidstr(code1, 3);
     var priority2 = wcsmidstr(code2, 0, 1);
     var type2 = wcsmidstr(code2, 1, 1);
-    var LRvalue2 = wcsmidstr(code2, 2, 1);
+    // var LRvalue2 = wcsmidstr(code2, 2, 1);
     code2 = wcsmidstr(code2, 3);
+    var etype = checkBinOpType(op, type1, type2);
     if (priority1 > opPriority)
         code1 = "(" + code1 + ")";
     if (priority2 >= opPriority)
         code2 = "(" + code2 + ")";
-    return opPriority + type1 + LRvalue1 + code1 + op + code2;
+    return opPriority + etype + "R" + code1 + op + code2;
 }
 expression = function () {
     var code = unaryExpression();
@@ -750,12 +760,14 @@ expression = function () {
         sp = sp + 1; // push(code2);
     }
     var n = 0;
+    /***
     console.log("-------------------------");
     while (n < sp) {
         console.log(stack[n]);
         n = n + 1;
     }
     console.log("-------------------------");
+    ***/
     while (sp >= 3) {
         stack[sp - 3] = genBianryOp(stack[sp - 3], stack[sp - 2], stack[sp - 1]);
         sp = sp - 2;

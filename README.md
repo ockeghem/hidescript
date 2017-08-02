@@ -69,7 +69,9 @@ C:> node hidescript.js foo.hs
 
 
 
+<!---
 ![ダミー](images/dumm.png "サンプル")
+-->
 
 
 

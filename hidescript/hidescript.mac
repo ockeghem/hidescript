@@ -1,0 +1,1521 @@
+﻿#symNew=0;
+#symVar=1;
+#symNumber=2;
+#symBoolean=3;
+#symString=4;
+#symVoid=5;
+#symFunction=6;
+#symReturn=7;
+#symIf=8;
+#symElse=9;
+#symWhile=10;
+#symDo=11;
+#symBreak=12;
+#symContinue=13;
+#symDummy=14;
+#symDigit=20;
+#symStringLiteral=21;
+#symIdent=22;
+#symComma=23;
+#symSemicolon=24;
+#symColon=25;
+#symAssignment=26;
+#symLambdaOp=27;
+#symUnaryOp=30;
+#symBinaryOp=32;
+#symAddOp=33;
+#symLParen=40;
+#symRParen=41;
+#symLCurlyBrace=42;
+#symRCurlyBrace=43;
+#symLBracket=44;
+#symRBracket=45;
+#symEOF=46;
+$keyword[#symNew]="new";
+$keyword[#symVar]="var";
+$keyword[#symNumber]="number";
+$keyword[#symBoolean]="boolean";
+$keyword[#symString]="string";
+$keyword[#symVoid]="void";
+$keyword[#symFunction]="function";
+$keyword[#symReturn]="return";
+$keyword[#symIf]="if";
+$keyword[#symElse]="else";
+$keyword[#symWhile]="while";
+$keyword[#symDo]="do";
+$keyword[#symBreak]="break";
+$keyword[#symContinue]="continue";
+$keyword[#symDummy]="$$dummy";
+#keywordStart=#symNew;
+#keywordEnd=#symDummy;
+$operators[0]="*";
+#opPriority[0]=2;
+$hidePriority[0]="1";
+$operators[1]="/";
+#opPriority[1]=2;
+$hidePriority[1]="1";
+$operators[2]="%";
+#opPriority[2]=2;
+$hidePriority[2]="1";
+$operators[3]="+";
+#opPriority[3]=3;
+$hidePriority[3]="2";
+$operators[4]="-";
+#opPriority[4]=3;
+$hidePriority[4]="2";
+$operators[5]="<";
+#opPriority[5]=4;
+$hidePriority[5]="3";
+$operators[6]="<=";
+#opPriority[6]=4;
+$hidePriority[6]="3";
+$operators[7]=">";
+#opPriority[7]=4;
+$hidePriority[7]="3";
+$operators[8]=">=";
+#opPriority[8]=4;
+$hidePriority[8]="3";
+$operators[9]="==";
+#opPriority[9]=5;
+$hidePriority[9]="3";
+$operators[10]="!=";
+#opPriority[10]=5;
+$hidePriority[10]="3";
+$operators[11]="&";
+#opPriority[11]=6;
+$hidePriority[11]="1";
+$operators[12]="^";
+#opPriority[12]=7;
+$hidePriority[12]="1";
+$operators[13]="|";
+#opPriority[13]=8;
+$hidePriority[13]="1";
+$operators[14]="&&";
+#opPriority[14]=9;
+$hidePriority[14]="4";
+$operators[15]="||";
+#opPriority[15]=10;
+$hidePriority[15]="4";
+#opStart=0;
+#opEnd=15;
+$ch="";
+#currentLevel=0;
+#nIdents=0;
+goto _end_register
+register:
+$identsName[#nIdents]=$$1;
+$identsType[#nIdents]=$$2;
+#identsLevel[#nIdents]=##3;
+##retval=#nIdents;
+#nIdents=#nIdents+1;
+return ##retval;
+return;
+_end_register:
+goto _end_registerBuiltinFunction
+registerBuiltinFunction:
+call register  $$1, "F"+$$2, 0;##_0=##return;
+
+return;
+_end_registerBuiltinFunction:
+call registerBuiltinFunction  "basename", "s";#_1=##return;
+
+call registerBuiltinFunction  "_delete", "v";#_2=##return;
+
+call registerBuiltinFunction  "disabledraw", "v";#_3=##return;
+
+call registerBuiltinFunction  "down", "v";#_4=##return;
+
+call registerBuiltinFunction  "enabledraw", "v";#_5=##return;
+
+call registerBuiltinFunction  "endmacro", "v";#_6=##return;
+
+call registerBuiltinFunction  "findhidemaru", "ns";#_7=##return;
+
+call registerBuiltinFunction  "gettext", "snnnn";#_8=##return;
+
+call registerBuiltinFunction  "insert", "vs";#_9=##return;
+
+call registerBuiltinFunction  "macrodir", "s";#_10=##return;
+
+call registerBuiltinFunction  "message", "vs";#_11=##return;
+
+call registerBuiltinFunction  "openfile", "vs";#_12=##return;
+
+call registerBuiltinFunction  "selectall", "v";#_13=##return;
+
+call registerBuiltinFunction  "selendx", "n";#_14=##return;
+
+call registerBuiltinFunction  "selendy", "n";#_15=##return;
+
+call registerBuiltinFunction  "seltopx", "n";#_16=##return;
+
+call registerBuiltinFunction  "seltopy", "n";#_17=##return;
+
+call registerBuiltinFunction  "setactivehidemaru", "vn";#_18=##return;
+
+call registerBuiltinFunction  "str", "sn";#_19=##return;
+
+call registerBuiltinFunction  "tickcount", "n";#_20=##return;
+
+call registerBuiltinFunction  "val", "ns";#_21=##return;
+
+call registerBuiltinFunction  "version", "n";#_22=##return;
+
+call registerBuiltinFunction  "wcsleftstr", "ssn";#_23=##return;
+
+call registerBuiltinFunction  "wcslen", "ns";#_24=##return;
+
+call registerBuiltinFunction  "wcsmidstr", "ssnn";#_25=##return;
+
+call registerBuiltinFunction  "wcsstrrstr", "nss";#_26=##return;
+
+goto _end_syntaxError
+syntaxError:
+message  $$1;
+message  wcsmidstr( $srcText, 0, 100);
+#symKind=#symEOF;
+endmacro ;
+return;
+_end_syntaxError:
+goto _end_isAlpha
+isAlpha:
+return $$1>="A"&&$$1<="Z"||($$1>="a"&&$$1<="z");
+return;
+_end_isAlpha:
+goto _end_isAlnum
+isAlnum:
+return $$1>="A"&&$$1<="Z"||($$1>="a"&&$$1<="z")||($$1>="0"&&$$1<="9");
+return;
+_end_isAlnum:
+goto _end_isDigit
+isDigit:
+return $$1>="0"&&$$1<="9";
+return;
+_end_isDigit:
+goto _end_nextChar
+nextChar:
+$ch=wcsmidstr( $srcText, 0, 1);
+$srcText=wcsmidstr( $srcText, 1);
+return $ch;
+return;
+_end_nextChar:
+goto _end_nextSym
+nextSym:
+##oldSym=#symKind;
+goto _LL1
+_LL0:
+goto _LL4
+_LL3:
+call nextChar ;$$_27=$$return;
+$ch=$$_27;
+_LL4:
+if ($ch==" "||($ch=="\t"||($ch=="\r"||$ch=="\n"))) goto _LL3
+_LL5:
+if ( $ch=="") {
+#symKind=#symEOF;
+return;
+}
+if ( $ch=="/") {
+call nextChar ;$$_28=$$return;
+
+if ( $ch=="/") {
+$$term="";
+_LL6:
+call nextChar ;$$_29=$$return;
+$ch=$$_29;
+$$term=$$term+$ch;
+if ( $$term=="EOF") {
+#symKind=#symEOF;
+return;
+}
+_LL7:
+if ($ch!="\n"&&$ch!="") goto _LL6
+_LL8:
+goto _LL1
+} else {
+if ( $ch=="*") {
+call nextChar ;$$_30=$$return;
+
+goto _LL10
+_LL9:
+if ( $ch=="") {
+call syntaxError  "コメントが閉じられないままEOFに達しました";##_31=##return;
+
+return;
+} else {
+if ( $ch=="*") {
+call nextChar ;$$_32=$$return;
+
+if ( $ch=="/") {
+call nextChar ;$$_33=$$return;
+
+goto _LL11
+}
+} else {
+call nextChar ;$$_34=$$return;
+
+}
+}
+_LL10:
+if (1) goto _LL9
+_LL11:
+goto _LL1
+} else {
+#symKind=#symBinaryOp;
+$operator="/";
+return;
+}
+}
+}
+call isAlpha  $ch;##_35=##return;
+if ( ##_35||$ch=="_") {
+$$s="";
+_LL12:
+$$s=$$s+$ch;
+call nextChar ;$$_36=$$return;
+
+_LL13:
+call isAlnum  $ch;##_37=##return;
+if (##_37||$ch=="_") goto _LL12
+_LL14:
+##i=#keywordStart;
+goto _LL16
+_LL15:
+if ( $keyword[##i]==$$s) {
+#symKind=##i;
+if ( #symKind==#symBoolean) {
+#symKind=#symNumber;
+}
+return;
+}
+##i=##i+1;
+_LL16:
+if (##i<=#keywordEnd) goto _LL15
+_LL17:
+$ident=$$s;
+#symKind=#symIdent;
+return;
+}
+call isDigit  $ch;##_38=##return;
+if ( ##_38) {
+$$digit="";
+_LL18:
+$$digit=$$digit+$ch;
+call nextChar ;$$_39=$$return;
+
+_LL19:
+call isDigit  $ch;##_40=##return;
+if (##_40) goto _LL18
+_LL20:
+#digitValue=val( $$digit);
+#symKind=#symDigit;
+return;
+}
+if ( $ch=="\""||$ch=="'") {
+$$terminator=$ch;
+$$stringLiteral="";
+call nextChar ;$$_41=$$return;
+
+goto _LL22
+_LL21:
+$$stringLiteral=$$stringLiteral+$ch;
+call nextChar ;$$_42=$$return;
+
+if ( wcslen( $ch)==0) {
+#symKind=#symEOF;
+return;
+}
+_LL22:
+if ($ch!=$$terminator) goto _LL21
+_LL23:
+call nextChar ;$$_43=$$return;
+
+$stringValue=$$stringLiteral;
+#symKind=#symStringLiteral;
+return;
+}
+if ( $ch==",") {
+#symKind=#symComma;
+call nextChar ;$$_44=$$return;
+
+return;
+}
+if ( $ch==";") {
+#symKind=#symSemicolon;
+call nextChar ;$$_45=$$return;
+
+return;
+}
+if ( $ch==":") {
+#symKind=#symColon;
+call nextChar ;$$_46=$$return;
+
+return;
+}
+if ( $ch=="=") {
+call nextChar ;$$_47=$$return;
+
+if ( $ch=="=") {
+#symKind=#symBinaryOp;
+$operator="==";
+call nextChar ;$$_48=$$return;
+
+} else {
+if ( $ch==">") {
+#symKind=#symLambdaOp;
+call nextChar ;$$_49=$$return;
+
+} else {
+#symKind=#symAssignment;
+}
+}
+return;
+}
+if ( $ch=="&") {
+call nextChar ;$$_50=$$return;
+
+if ( $ch=="&") {
+#symKind=#symBinaryOp;
+$operator="&&";
+call nextChar ;$$_51=$$return;
+
+} else {
+call syntaxError  "意図しない文字があります";##_52=##return;
+
+}
+return;
+}
+if ( $ch=="|") {
+call nextChar ;$$_53=$$return;
+
+if ( $ch=="|") {
+#symKind=#symBinaryOp;
+$operator="||";
+call nextChar ;$$_54=$$return;
+
+} else {
+call syntaxError  "意図しない文字があります";##_55=##return;
+
+}
+return;
+}
+if ( $ch=="~") {
+#symKind=#symUnaryOp;
+$operator="~";
+call nextChar ;$$_56=$$return;
+
+return;
+}
+if ( $ch=="!") {
+call nextChar ;$$_57=$$return;
+$ch=$$_57;
+if ( $ch=="=") {
+#symKind=#symBinaryOp;
+$operator="!=";
+call nextChar ;$$_58=$$return;
+
+} else {
+#symKind=#symUnaryOp;
+$operator="!";
+}
+return;
+}
+if ( $ch==">") {
+#symKind=#symBinaryOp;
+call nextChar ;$$_59=$$return;
+$ch=$$_59;
+if ( $ch=="=") {
+$operator=">=";
+call nextChar ;$$_60=$$return;
+
+} else {
+$operator=">";
+}
+return;
+}
+if ( $ch=="<") {
+#symKind=#symBinaryOp;
+call nextChar ;$$_61=$$return;
+$ch=$$_61;
+if ( $ch=="=") {
+$operator="<=";
+call nextChar ;$$_62=$$return;
+
+} else {
+$operator="<";
+}
+return;
+}
+if ( $ch=="*"||$ch=="%") {
+#symKind=#symBinaryOp;
+$operator=$ch;
+call nextChar ;$$_63=$$return;
+
+return;
+}
+if ( $ch=="+"||$ch=="-") {
+#symKind=#symAddOp;
+$operator=$ch;
+call nextChar ;$$_64=$$return;
+
+return;
+}
+if ( $ch=="(") {
+#symKind=#symLParen;
+call nextChar ;$$_65=$$return;
+
+return;
+}
+if ( $ch==")") {
+#symKind=#symRParen;
+call nextChar ;$$_66=$$return;
+
+return;
+}
+if ( $ch=="{") {
+#symKind=#symLCurlyBrace;
+call nextChar ;$$_67=$$return;
+
+return;
+}
+if ( $ch=="}") {
+#symKind=#symRCurlyBrace;
+call nextChar ;$$_68=$$return;
+
+return;
+}
+if ( $ch=="[") {
+#symKind=#symLBracket;
+call nextChar ;$$_69=$$return;
+
+return;
+}
+if ( $ch=="]") {
+#symKind=#symRBracket;
+call nextChar ;$$_70=$$return;
+
+return;
+}
+call syntaxError  "意図しない文字があります";##_71=##return;
+
+return;
+_LL1:
+if (1) goto _LL0
+_LL2:
+return;
+_end_nextSym:
+goto _end_initCompiler
+initCompiler:
+$srcText=$$1;
+call nextChar ;$$_72=$$return;
+
+call nextSym ;##_73=##return;
+
+return;
+_end_initCompiler:
+goto _end_checkSym
+checkSym:
+if ( #symKind==##1) {
+call nextSym ;##_74=##return;
+
+return;
+}
+call syntaxError  $$2+"が必要です";##_75=##return;
+
+return;
+_end_checkSym:
+goto _end_searchIdent
+searchIdent:
+##i=#nIdents-1;
+goto _LL25
+_LL24:
+if ( $identsName[##i]==$$1) {
+return ##i;
+}
+##i=##i-1;
+_LL25:
+if (##i>=0) goto _LL24
+_LL26:
+return -1;
+return;
+_end_searchIdent:
+goto _end_dumpIdents
+dumpIdents:
+insert  "// --------------------\n";
+##i=0;
+goto _LL28
+_LL27:
+insert  "// "+$identsName[##i]+":"+$identsType[##i]+":"+str( #identsLevel[##i])+"\n";
+##i=##i+1;
+_LL28:
+if (##i<#nIdents) goto _LL27
+_LL29:
+insert  "// --------------------\n";
+return;
+_end_dumpIdents:
+$tempCode="";
+goto _end_genTempCode
+genTempCode:
+if ( $tempCode>"") {
+insert  $tempCode+"\n";
+$tempCode="";
+}
+return;
+_end_genTempCode:
+goto _end_genCode
+genCode:
+call genTempCode ;##_76=##return;
+
+insert  $$1+"\n";
+return;
+_end_genCode:
+goto _end_genReturnVar
+genReturnVar:
+if ( $$1=="s") {
+return "$$return";
+} else {
+return "##return";
+}
+return;
+_end_genReturnVar:
+goto _end_pushTempCode
+pushTempCode:
+$tempCode=$tempCode+$$1;
+return;
+_end_pushTempCode:
+goto _end_popTempCode
+popTempCode:
+$$code=$tempCode;
+$tempCode="";
+return $$code;
+return;
+_end_popTempCode:
+goto _end_genVar
+genVar:
+$$varType=wcsmidstr( $identsType[##1], 0, 1);
+$$typeChar=$$varType;
+$$varPrefix="$";
+##array=0;
+if ( $$typeChar=="n") {
+$$varPrefix="#";
+} else {
+if ( $$typeChar=="S") {
+##array=1;
+$$typeChar="s";
+} else {
+if ( $$typeChar=="N") {
+##array=1;
+$$typeChar="n";
+$$varPrefix="#";
+}
+}
+}
+if ( #identsLevel[##1]==0) {
+$$code="0"+$$typeChar+"L"+$$varPrefix+$identsName[##1];
+} else {
+if ( #identsLevel[##1]<0) {
+$$code="0"+$$typeChar+"L"+$$varPrefix+$$varPrefix+str( -#identsLevel[##1]);
+} else {
+$$code="0"+$$typeChar+"L"+$$varPrefix+$$varPrefix+$identsName[##1];
+}
+}
+if ( ##array) {
+if ( #symKind!=#symLBracket) {
+call syntaxError  "[が必要です";##_77=##return;
+
+}
+goto _LL31
+_LL30:
+call nextSym ;##_78=##return;
+
+call expression ;$$_79=$$return;
+$$code2=$$_79;
+$$code=$$code+"["+wcsmidstr( $$code2, 3)+"]";
+call checkSym  #symRBracket, "]";##_80=##return;
+
+_LL31:
+if (#symKind==#symLBracket) goto _LL30
+_LL32:
+}
+return $$code;
+return;
+_end_genVar:
+#nTempVars=0;
+#nTempLable=0;
+#currentBreakLabel=-1;
+#currentContinueLabel=-1;
+goto _end_getTempLabels
+getTempLabels:
+##L=#nTempLable;
+#nTempLable=#nTempLable+##1;
+return ##L;
+return;
+_end_getTempLabels:
+goto _end_validLabel
+validLabel:
+return ##1>=0;
+return;
+_end_validLabel:
+goto _end_genTempVar
+genTempVar:
+$$varname="_"+str( #nTempVars);
+#nTempVars=#nTempVars+1;
+if ( $$1=="s") {
+if ( #currentLevel==0) {
+return "0sR$"+$$varname;
+} else {
+return "0sR$$"+$$varname;
+}
+} else {
+if ( #currentLevel==0) {
+return "0nR#"+$$varname;
+} else {
+return "0nR##"+$$varname;
+}
+}
+return;
+_end_genTempVar:
+goto _end_variableOrFunctionCall
+variableOrFunctionCall:
+call searchIdent  $ident;##_81=##return;
+##pos=##_81;
+if ( ##pos<0) {
+call syntaxError  $ident+"が見つかりません";##_82=##return;
+
+}
+call nextSym ;##_83=##return;
+
+$$type=wcsmidstr( $identsType[##pos], 0, 1);
+if ( $$type=="s"||($$type=="S"||($$type=="n"||$$type=="N"))) {
+call genVar  ##pos;$$_84=$$return;
+return $$_84;
+} else {
+if ( $$type=="f"||$$type=="x") {
+if ( $$type=="x"&&#symKind!=#symLParen) {
+call genVar  ##pos;$$_85=$$return;
+return $$_85;
+}
+$$funcType=wcsmidstr( $identsType[##pos], 1, 1);
+$$code="call "+$identsName[##pos]+" ";
+call checkSym  #symLParen, "(";##_86=##return;
+
+if ( #symKind!=#symRParen) {
+goto _LL34
+_LL33:
+call expression ;$$_87=$$return;
+$$codeParam=$$_87;
+$$code=$$code+" "+wcsmidstr( $$codeParam, 3);
+if ( #symKind!=#symComma) {
+goto _LL35
+}
+$$code=$$code+",";
+call nextSym ;##_88=##return;
+
+_LL34:
+if (1) goto _LL33
+_LL35:
+}
+call checkSym  #symRParen, ")";##_89=##return;
+
+call pushTempCode  $$code+";";##_90=##return;
+
+call genTempVar  $$funcType;$$_91=$$return;
+$$tempVar=$$_91;
+call genReturnVar  $$funcType;$$_92=$$return;call pushTempCode  wcsmidstr( $$tempVar, 3)+"="+$$_92+";";##_93=##return;
+
+return $$tempVar;
+} else {
+if ( $$type=="F") {
+$$funcType=wcsmidstr( $identsType[##pos], 1, 1);
+$$funcName=$identsName[##pos];
+if ( wcsleftstr( $$funcName, 1)=="_") {
+$$funcName=wcsmidstr( $$funcName, 1);
+}
+if ( $$funcType=="v") {
+$$code=$$funcName+" ";
+} else {
+if ( wcslen( $identsType[##pos])==2) {
+$$code=$$funcName;
+} else {
+$$code=$identsName[##pos]+"(";
+}
+}
+call checkSym  #symLParen, "(";##_94=##return;
+
+if ( #symKind!=#symRParen) {
+goto _LL37
+_LL36:
+call expression ;$$_95=$$return;
+$$codeParam=$$_95;
+$$code=$$code+" "+wcsmidstr( $$codeParam, 3);
+if ( #symKind!=#symComma) {
+goto _LL38
+}
+$$code=$$code+",";
+call nextSym ;##_96=##return;
+
+_LL37:
+if (1) goto _LL36
+_LL38:
+}
+if ( $$funcType!="v"&&wcslen( $identsType[##pos])!=2) {
+$$code=$$code+")";
+}
+call checkSym  #symRParen, ")";##_97=##return;
+
+return "0"+$$funcType+"R"+$$code;
+} else {
+call syntaxError  "不正な識別子です（コンパイラのバグ?）";##_98=##return;
+
+}
+}
+}
+return;
+_end_variableOrFunctionCall:
+goto _end_factor
+factor:
+if ( #symKind==#symLParen) {
+call nextSym ;##_99=##return;
+
+call expression ;$$_100=$$return;
+$$code=$$_100;
+$$priority=wcsmidstr( $$code, 0, 1);
+call checkSym  #symRParen, ")";##_101=##return;
+
+return wcsmidstr( $$code, 0, 2)+"R"+wcsmidstr( $$code, 3);
+} else {
+if ( #symKind==#symIdent) {
+call variableOrFunctionCall ;$$_102=$$return;
+return $$_102;
+} else {
+if ( #symKind==#symDigit) {
+##dValue=#digitValue;
+call nextSym ;##_103=##return;
+
+return "0nR"+str( ##dValue);
+} else {
+if ( #symKind==#symStringLiteral) {
+$$sValue=$stringValue;
+call nextSym ;##_104=##return;
+
+return "0sR\""+$$sValue+"\"";
+} else {
+call syntaxError  "識別子か数値が必要です";##_105=##return;
+
+}
+}
+}
+}
+return;
+_end_factor:
+goto _end_unaryExpression
+unaryExpression:
+$$ops="";
+##logicalNot=0;
+goto _LL40
+_LL39:
+if ( $operator=="!") {
+##logicalNot=1;
+}
+$$ops=$$ops+$operator;
+call nextSym ;##_106=##return;
+
+_LL40:
+if (#symKind==#symAddOp||#symKind==#symUnaryOp) goto _LL39
+_LL41:
+call factor ;$$_107=$$return;
+$$code=$$_107;
+$$priority=wcsmidstr( $$code, 0, 1);
+$$type1=wcsmidstr( $$code, 1, 1);
+$$LRvalue=wcsmidstr( $$code, 2, 1);
+$$code=wcsmidstr( $$code, 3);
+if ( #symKind==#symUnaryOp&&$$type1!="n") {
+call syntaxError  "数値型が必要です";##_108=##return;
+
+}
+if ( $$ops!=""&&$$priority>"1") {
+$$code=$$ops+"("+$$code+")";
+} else {
+$$code=$$ops+$$code;
+}
+if ( ##logicalNot) {
+$$priority="5";
+}
+return $$priority+$$type1+$$LRvalue+$$code;
+return;
+_end_unaryExpression:
+goto _end_getOpPriority
+getOpPriority:
+##p=0;
+goto _LL43
+_LL42:
+if ( $operators[##p]==$$1) {
+return #opPriority[##p];
+}
+##p=##p+1;
+_LL43:
+if (##p<=#opEnd) goto _LL42
+_LL44:
+call syntaxError  "演算子の優先順位が見つかりません（コンパイラのバグ?）";##_109=##return;
+
+return;
+_end_getOpPriority:
+goto _end_getHidePriority
+getHidePriority:
+##p=0;
+goto _LL46
+_LL45:
+if ( $operators[##p]==$$1) {
+return $hidePriority[##p];
+}
+##p=##p+1;
+_LL46:
+if (##p<=#opEnd) goto _LL45
+_LL47:
+call syntaxError  "演算子の秀丸マクロ上の優先順位が見つかりません（コンパイラのバグ?）";##_110=##return;
+
+return;
+_end_getHidePriority:
+goto _end_checkBinOpType
+checkBinOpType:
+$$etype=$$2;
+if ( $$1=="+") {
+if ( $$2!=$$3) {
+call syntaxError  "文字列と数値の足し算はできません";##_111=##return;
+
+}
+} else {
+if ( $$1=="=="||($$1=="!="||($$1==">"||($$1==">="||($$1=="<"||$$1=="<="))))) {
+if ( $$2!=$$3) {
+call syntaxError  "文字列と数値の比較はできません";##_112=##return;
+
+}
+$$etype="n";
+} else {
+if ( $$2!="n"||$$3!="n") {
+call syntaxError  "数値型が必要です";##_113=##return;
+
+}
+$$etype="n";
+}
+}
+return $$etype;
+return;
+_end_checkBinOpType:
+goto _end_genBianryOp
+genBianryOp:
+call getHidePriority  $$2;$$_114=$$return;
+$$opPriority=$$_114;
+$$priority1=wcsmidstr( $$1, 0, 1);
+$$type1=wcsmidstr( $$1, 1, 1);
+$$1=wcsmidstr( $$1, 3);
+$$priority2=wcsmidstr( $$3, 0, 1);
+$$type2=wcsmidstr( $$3, 1, 1);
+$$3=wcsmidstr( $$3, 3);
+call checkBinOpType  $$2, $$type1, $$type2;$$_115=$$return;
+$$etype=$$_115;
+if ( $$priority1>$$opPriority) {
+$$1="("+$$1+")";
+}
+if ( $$priority2>=$$opPriority) {
+$$3="("+$$3+")";
+}
+return $$opPriority+$$etype+"R"+$$1+$$2+$$3;
+return;
+_end_genBianryOp:
+goto _end_expression
+expression:
+call unaryExpression ;$$_116=$$return;
+$$code=$$_116;
+##sp=0;
+$$stack[##sp]=$$code;
+##sp=##sp+1;
+goto _LL49
+_LL48:
+$$op=$operator;
+call nextSym ;##_117=##return;
+
+if ( ##sp>=3) {
+$$op1=$$stack[##sp-2];
+call getOpPriority  $$op1;##_118=##return;
+##op1pri=##_118;
+call getOpPriority  $$op;##_119=##return;
+##op2pri=##_119;
+if ( ##op1pri<=##op2pri) {
+call genBianryOp  $$stack[##sp-3], $$op1, $$stack[##sp-1];$$_120=$$return;
+$$stack[##sp-3]=$$_120;
+##sp=##sp-2;
+}
+##dummy=1;
+}
+$$stack[##sp]=$$op;
+##sp=##sp+1;
+call unaryExpression ;$$_121=$$return;
+$$code2=$$_121;
+$$stack[##sp]=$$code2;
+##sp=##sp+1;
+_LL49:
+if (#symKind==#symBinaryOp||#symKind==#symAddOp) goto _LL48
+_LL50:
+##n=0;
+goto _LL52
+_LL51:
+call genBianryOp  $$stack[##sp-3], $$stack[##sp-2], $$stack[##sp-1];$$_122=$$return;
+$$stack[##sp-3]=$$_122;
+##sp=##sp-2;
+_LL52:
+if (##sp>=3) goto _LL51
+_LL53:
+return $$stack[0];
+return;
+_end_expression:
+goto _end_parameter
+parameter:
+$$paramName=$ident;
+$$type="";
+call checkSym  #symIdent, "識別子";##_123=##return;
+
+call checkSym  #symColon, ":";##_124=##return;
+
+if ( #symKind==#symNumber) {
+$$type="n";
+} else {
+if ( #symKind==#symString) {
+$$type="s";
+} else {
+call syntaxError  "型名が必要です";##_125=##return;
+
+}
+}
+call register  $$paramName, $$type, -##1;##_126=##return;
+
+call nextSym ;##_127=##return;
+
+return $$type;
+return;
+_end_parameter:
+goto _end_parameterList
+parameterList:
+##n=1;
+$$paramTypes="";
+goto _LL55
+_LL54:
+call parameter  ##n;$$_128=$$return;
+$$paramTypes=$$paramTypes+$$_128;
+if ( #symKind!=#symComma) {
+goto _LL56
+}
+call nextSym ;##_129=##return;
+
+##n=##n+1;
+_LL55:
+if (1) goto _LL54
+_LL56:
+return $$paramTypes;
+return;
+_end_parameterList:
+goto _end_statementList
+statementList:
+goto _LL58
+_LL57:
+call statement ;##_130=##return;
+
+_LL58:
+if (#symKind!=##1) goto _LL57
+_LL59:
+return;
+_end_statementList:
+goto _end_defFunction
+defFunction:
+##funcPos=0;
+$$funcType="fv";
+$$funcTypeFw="";
+if ( #currentLevel!=0) {
+call syntaxError  "関数のネストはできません";##_131=##return;
+
+}
+if ( $$1=="") {
+call checkSym  #symIdent, "識別子";##_132=##return;
+
+$$1=$ident;
+call register  $$1, $$funcType, 0;##_133=##return;
+##funcPos=##_133;
+} else {
+call searchIdent  $$1;##_134=##return;
+##funcPos=##_134;
+$$funcTypeFw=$identsType[##funcPos];
+}
+call genCode  "goto _end_"+$$1;##_135=##return;
+
+call genCode  $$1+":";##_136=##return;
+
+$currentFuncType="v";
+##saveNIdents=#nIdents;
+call checkSym  #symLParen, "(";##_137=##return;
+
+$$paramTypes="";
+if ( #symKind==#symIdent) {
+call parameterList ;$$_138=$$return;
+$$paramTypes=$$_138;
+}
+call checkSym  #symRParen, ")";##_139=##return;
+
+if ( #symKind==#symColon) {
+call nextSym ;##_140=##return;
+
+if ( #symKind==#symVoid) {
+} else {
+if ( #symKind==#symNumber) {
+$$funcType="fn";
+$currentFuncType="n";
+} else {
+if ( #symKind==#symString) {
+$$funcType="fs";
+$currentFuncType="s";
+} else {
+call syntaxError  "型名が必要です";##_141=##return;
+
+}
+}
+}
+call nextSym ;##_142=##return;
+
+}
+$$funcType=$$funcType+$$paramTypes;
+$identsType[##funcPos]=$$funcType;
+#currentLevel=1;
+call checkSym  #symLCurlyBrace, "{";##_143=##return;
+
+call statementList  #symRCurlyBrace;##_144=##return;
+
+call checkSym  #symRCurlyBrace, "}";##_145=##return;
+
+#nIdents=##saveNIdents;
+#currentLevel=0;
+call genCode  "return;";##_146=##return;
+
+call genCode  "_end_"+$$1+":";##_147=##return;
+
+return;
+_end_defFunction:
+goto _end_assignmentExpression
+assignmentExpression:
+call factor ;$$_148=$$return;
+$$code=$$_148;
+$$type1=wcsmidstr( $$code, 1, 1);
+$$LRvalue=wcsmidstr( $$code, 2, 1);
+$$code=wcsmidstr( $$code, 3);
+if ( #symKind==#symAssignment) {
+if ( $$LRvalue=="R") {
+call syntaxError  "代入文の左辺には左辺値が必要です";##_149=##return;
+
+}
+call nextSym ;##_150=##return;
+
+if ( #symKind==#symFunction) {
+call nextSym ;##_151=##return;
+
+call defFunction  wcsmidstr( $$code, 1);##_152=##return;
+
+} else {
+call expression ;$$_153=$$return;
+$$code2=$$_153;
+if ( wcsmidstr( $$code2, 1, 1)!=$$type1) {
+call syntaxError  "文字列と数値の型が異なる代入はできません";##_154=##return;
+
+}
+$$code=$$code+"="+wcsmidstr( $$code2, 3);
+call genCode  $$code+";";##_155=##return;
+
+}
+} else {
+if ( $$type1!="v") {
+$$code="";
+} else {
+$$code=$$code+";";
+}
+call genCode  $$code;##_156=##return;
+
+##dummy=1;
+}
+return;
+return;
+_end_assignmentExpression:
+goto _end_checkType
+checkType:
+if ( #symKind==#symNumber) {
+$$typeName="n";
+} else {
+$$typeName="s";
+}
+call nextSym ;##_157=##return;
+
+if ( #symKind==#symLBracket) {
+call nextSym ;##_158=##return;
+
+if ( $$typeName=="n") {
+$$typeName="NL";
+} else {
+$$typeName="SL";
+}
+call checkSym  #symRBracket, "]";##_159=##return;
+
+if ( #symKind==#symAssignment) {
+call nextSym ;##_160=##return;
+
+call checkSym  #symNew, "new";##_161=##return;
+
+call checkSym  #symIdent, "Array";##_162=##return;
+
+call checkSym  #symLParen, "(";##_163=##return;
+
+call checkSym  #symRParen, ")";##_164=##return;
+
+}
+} else {
+$$typeName=$$typeName+"L";
+}
+return $$typeName;
+return;
+_end_checkType:
+goto _end_checkFunction
+checkFunction:
+$$paramTypes="";
+call nextSym ;##_165=##return;
+
+if ( #symKind==#symIdent) {
+call parameterList ;$$_166=$$return;
+$$paramTypes=$$_166;
+}
+call checkSym  #symRParen, ")";##_167=##return;
+
+call checkSym  #symLambdaOp, "=>";##_168=##return;
+
+if ( #symKind==#symVoid) {
+$$funcType="xv";
+} else {
+if ( #symKind==#symNumber) {
+$$funcType="xn";
+} else {
+if ( #symKind==#symString) {
+$$funcType="xs";
+} else {
+call syntaxError  "型名が必要です";##_169=##return;
+
+}
+}
+}
+call nextSym ;##_170=##return;
+
+return $$funcType+$$paramTypes;
+return;
+_end_checkFunction:
+goto _end_varStatement
+varStatement:
+call checkSym  #symIdent, "識別子";##_171=##return;
+
+$$varName=$ident;
+if ( #symKind==#symColon) {
+call nextSym ;##_172=##return;
+
+if ( #symKind==#symNumber||#symKind==#symString) {
+call checkType ;$$_173=$$return;
+$$typeName=$$_173;
+call register  $$varName, $$typeName, #currentLevel;##_174=##return;
+
+} else {
+if ( #symKind==#symLParen) {
+call checkFunction ;$$_175=$$return;
+$$typeName=$$_175;
+call register  $$varName, $$typeName, #currentLevel;##_176=##return;
+
+} else {
+call syntaxError  "型名が必要です";##_177=##return;
+
+}
+}
+} else {
+if ( #symKind==#symAssignment) {
+call nextSym ;##_178=##return;
+
+call expression ;$$_179=$$return;
+$$code1=$$_179;
+$$typeName=wcsmidstr( $$code1, 1, 1);
+call register  $$varName, $$typeName, #currentLevel;##_180=##return;
+##pos=##_180;
+call genVar  ##pos;$$_181=$$return;
+$$code2=$$_181;
+call genCode  wcsmidstr( $$code2, 3)+"="+wcsmidstr( $$code1, 3)+";";##_182=##return;
+
+} else {
+call syntaxError  "式またはコロンが必要です";##_183=##return;
+
+}
+}
+return;
+_end_varStatement:
+goto _end_getLabel
+getLabel:
+return "_LL"+str( ##1);
+return;
+_end_getLabel:
+goto _end_genLabel
+genLabel:
+call getLabel  ##1;$$_184=$$return;call genCode  $$_184+":";##_185=##return;
+
+return;
+_end_genLabel:
+goto _end_ifStatement
+ifStatement:
+call checkSym  #symLParen, "(";##_186=##return;
+
+call expression ;$$_187=$$return;
+$$cmpCode=$$_187;
+call checkSym  #symRParen, ")";##_188=##return;
+
+call genCode  "if ( "+wcsmidstr( $$cmpCode, 3)+") {";##_189=##return;
+
+call statement ;##_190=##return;
+##code=##_190;
+if ( #symKind==#symElse) {
+call nextSym ;##_191=##return;
+
+call genCode  "} else {";##_192=##return;
+
+call statement ;##_193=##return;
+##code=##_193;
+}
+call genCode  "}";##_194=##return;
+
+return;
+_end_ifStatement:
+goto _end_whileStatement
+whileStatement:
+##saveBreakLabel=#currentBreakLabel;
+##saveContinueLabel=#currentContinueLabel;
+call getTempLabels  3;##_195=##return;
+##label=##_195;
+#currentBreakLabel=##label+2;
+#currentContinueLabel=##label+1;
+call getLabel  #currentContinueLabel;$$_196=$$return;call genCode  "goto "+$$_196;##_197=##return;
+
+call checkSym  #symLParen, "(";##_198=##return;
+
+call expression ;$$_199=$$return;
+$$cmpCode=$$_199;
+call popTempCode ;$$_200=$$return;
+$$tempCode=$$_200;
+call checkSym  #symRParen, ")";##_201=##return;
+
+call genLabel  ##label;##_202=##return;
+
+call statement ;##_203=##return;
+
+call genLabel  ##label+1;##_204=##return;
+
+call pushTempCode  $$tempCode;##_205=##return;
+
+call getLabel  ##label;$$_206=$$return;call genCode  "if ("+wcsmidstr( $$cmpCode, 3)+") goto "+$$_206;##_207=##return;
+
+call genLabel  ##label+2;##_208=##return;
+
+#currentBreakLabel=##saveBreakLabel;
+#currentContinueLabel=##saveContinueLabel;
+return;
+_end_whileStatement:
+goto _end_doStatement
+doStatement:
+##saveBreakLabel=#currentBreakLabel;
+##saveContinueLabel=#currentContinueLabel;
+call getTempLabels  3;##_209=##return;
+##label=##_209;
+#currentBreakLabel=##label+2;
+#currentContinueLabel=##label+1;
+call genLabel  ##label;##_210=##return;
+
+call statement ;##_211=##return;
+
+call genLabel  ##label+1;##_212=##return;
+
+call checkSym  #symWhile, "while";##_213=##return;
+
+call checkSym  #symLParen, "(";##_214=##return;
+
+call expression ;$$_215=$$return;
+$$cmpCode=$$_215;
+call checkSym  #symRParen, ")";##_216=##return;
+
+call getLabel  ##label;$$_217=$$return;call genCode  "if ("+wcsmidstr( $$cmpCode, 3)+") goto "+$$_217;##_218=##return;
+
+call genLabel  ##label+2;##_219=##return;
+
+#currentBreakLabel=##saveBreakLabel;
+#currentContinueLabel=##saveContinueLabel;
+return;
+_end_doStatement:
+goto _end_returnStatement
+returnStatement:
+if ( #symKind==#symSemicolon) {
+if ( $currentFuncType!="v") {
+call syntaxError  "returnの後に式が必要です";##_220=##return;
+
+}
+call genCode  "return;";##_221=##return;
+
+} else {
+call expression ;$$_222=$$return;
+$$code=$$_222;
+call genCode  "return "+wcsmidstr( $$code, 3)+";";##_223=##return;
+
+}
+return;
+return;
+_end_returnStatement:
+goto _end_breakStatement
+breakStatement:
+call validLabel  #currentBreakLabel;##_224=##return;
+if ( ##_224) {
+call getLabel  #currentBreakLabel;$$_225=$$return;call genCode  "goto "+$$_225;##_226=##return;
+
+} else {
+call syntaxError  "breakできません";##_227=##return;
+
+}
+return;
+return;
+_end_breakStatement:
+goto _end_continueStatement
+continueStatement:
+call validLabel  #currentContinueLabel;##_228=##return;
+if ( ##_228) {
+call getLabel  #currentContinueLabel;$$_229=$$return;call genCode  "goto "+$$_229;##_230=##return;
+
+} else {
+call syntaxError  "continueできません";##_231=##return;
+
+}
+return;
+return;
+_end_continueStatement:
+goto _end_statement
+statement:
+if ( #symKind==#symVar) {
+call nextSym ;##_232=##return;
+
+call varStatement ;##_233=##return;
+
+} else {
+if ( #symKind==#symIdent) {
+call assignmentExpression ;##_234=##return;
+
+} else {
+if ( #symKind==#symFunction) {
+call nextSym ;##_235=##return;
+
+call defFunction  "";##_236=##return;
+
+} else {
+if ( #symKind==#symIf) {
+call nextSym ;##_237=##return;
+
+call ifStatement ;##_238=##return;
+
+} else {
+if ( #symKind==#symWhile) {
+call nextSym ;##_239=##return;
+
+call whileStatement ;##_240=##return;
+
+} else {
+if ( #symKind==#symDo) {
+call nextSym ;##_241=##return;
+
+call doStatement ;##_242=##return;
+
+} else {
+if ( #symKind==#symReturn) {
+call nextSym ;##_243=##return;
+
+call returnStatement ;##_244=##return;
+
+} else {
+if ( #symKind==#symBreak) {
+call nextSym ;##_245=##return;
+
+call breakStatement ;##_246=##return;
+
+} else {
+if ( #symKind==#symContinue) {
+call nextSym ;##_247=##return;
+
+call continueStatement ;##_248=##return;
+
+} else {
+if ( #symKind==#symLCurlyBrace) {
+call nextSym ;##_249=##return;
+
+call statementList  #symRCurlyBrace;##_250=##return;
+
+call nextSym ;##_251=##return;
+
+} else {
+call syntaxError  "予期しない文です";##_252=##return;
+
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+if ( #symKind==#symSemicolon) {
+call nextSym ;##_253=##return;
+
+}
+return;
+_end_statement:
+$outBuffer="";
+goto _end_compile
+compile:
+call initCompiler  $$1;##_254=##return;
+
+call statementList  #symEOF;##_255=##return;
+
+insert  "// compileAndExecute::Done\n";
+return $outBuffer;
+return;
+_end_compile:
+if ( version>0) {
+selectall ;
+$sx=gettext( seltopx, seltopy, selendx, selendy);
+$filebase=basename;
+if ( $filebase=="") {
+message  "まずセーブして下さい";
+endmacro ;
+}
+#pos=wcsstrrstr( $filebase, ".");
+$filebase=wcsleftstr( $filebase, #pos)+".mac";
+$filename=macrodir+"\\"+$filebase;
+#winno=findhidemaru( $filename);
+if ( #winno==-1) {
+openfile  $filename;
+} else {
+setactivehidemaru  #winno;
+}
+selectall ;
+insert  "コンパイル中…しばらくお待ち下さい";
+selectall ;
+disabledraw ;
+selectall ;
+delete ;
+#t1=tickcount;
+call compile  $sx;$_256=$$return;
+
+#t2=tickcount;
+insert  "// t1 : "+str( #t1)+"  t2 : "+str( #t2)+"  diff = "+str( #t2-#t1)+"\n";
+enabledraw ;
+}
+// compileAndExecute::Done
