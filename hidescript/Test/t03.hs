@@ -1,8 +1,13 @@
 var n = 5;
 var foo: (x: number) => number;
 var x = foo(n);
+// x = foo("xxx")
+// x = foo();
+// x = foo(n, 1);
 // ...
-foo = function (x: number): number { return 1; }
+foo = function(x: number): number { return 1; }
+
+insert("End")
 //EOF
 endmacro();
 
