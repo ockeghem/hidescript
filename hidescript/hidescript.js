@@ -130,7 +130,7 @@ var identsName = new Array();
 var identsType = new Array();
 var identsLevel = new Array();
 var nIdents = 0;
-var currentFuncType; // 現在の関数の型 s n v のいずれか
+var currentFuncType = ""; // 現在の関数の型 s n v のいずれか
 /*
  * typeName : n .. number  s .. string   f .. function
  *
@@ -168,11 +168,12 @@ registerBuiltinFunction("seltopy", "n");
 registerBuiltinFunction("setactivehidemaru", "vn");
 registerBuiltinFunction("str", "sn");
 registerBuiltinFunction("tickcount", "n");
+registerBuiltinFunction("tolower", "ss");
 registerBuiltinFunction("val", "ns");
 registerBuiltinFunction("version", "n");
 registerBuiltinFunction("wcsleftstr", "ssn");
 registerBuiltinFunction("wcslen", "ns");
-registerBuiltinFunction("wcsmidstr", "ssnn");
+registerBuiltinFunction("wcsmidstr", "ssnN");
 registerBuiltinFunction("wcsstrrstr", "nss");
 function syntaxError(msg) {
     message(msg);
@@ -470,7 +471,7 @@ function genTempCode() {
         insert(tempCode + "\n");
         tempCode = "";
     }
-    nTempVars = 0; // todo 試験的に実装
+    nTempVars = 0; // todo 試験的に実装 .. nTempVars をここでリセット
 }
 function genCode(code) {
     genTempCode();
@@ -564,6 +565,62 @@ function genTempVar(type) {
         }
     }
 }
+function genParameterCode(paramTypes) {
+    var paramCode = "";
+    if (symKind != symRParen) {
+        while (1) {
+            var paramType = wcsmidstr(paramTypes, 0, 1);
+            if (paramType == "")
+                syntaxError("パラメータが多すぎます");
+            var codeParam = expression();
+            var codeType = wcsmidstr(codeParam, 1, 1); // パラメータコードの型を取り出し
+            if (tolower(paramType) != codeType)
+                syntaxError("パラメータの型が違います");
+            paramCode = paramCode + " " + wcsmidstr(codeParam, 3); // todo 型のチェック
+            paramTypes = wcsmidstr(paramTypes, 1);
+            if (symKind != symComma)
+                break;
+            paramCode = paramCode + ",";
+            nextSym();
+        }
+    }
+    if (paramTypes > "" && (paramTypes == "n" || paramTypes == "s"))
+        syntaxError("パラメータが足りません");
+    return paramCode;
+}
+function functionCall(pos, type) {
+    if (type == "x" && symKind != symLParen)
+        return genVar(pos); // todo これが何のためにあるか忘れたので要確認
+    var funcType = wcsmidstr(identsType[pos], 1, 1);
+    var code = "call " + identsName[pos] + " ";
+    checkSym(symLParen, '(');
+    code = code + genParameterCode(wcsmidstr(identsType[pos], 2));
+    checkSym(symRParen, ')');
+    pushTempCode(code + ";");
+    var tempVar = genTempVar(funcType);
+    pushTempCode(wcsmidstr(tempVar, 3) + "=" + genReturnVar(funcType) + ";");
+    return tempVar;
+}
+function builtinFunction(pos) {
+    var funcType = wcsmidstr(identsType[pos], 1, 1);
+    var code;
+    var funcName = identsName[pos];
+    if (wcsleftstr(funcName, 1) == "_") {
+        funcName = wcsmidstr(funcName, 1);
+    }
+    if (funcType == "v")
+        code = funcName + " ";
+    else if (wcslen(identsType[pos]) == 2)
+        code = funcName;
+    else
+        code = identsName[pos] + "("; // 通常の組み込み関数関数
+    checkSym(symLParen, '(');
+    code = code + genParameterCode(wcsmidstr(identsType[pos], 2));
+    if (funcType != "v" && wcslen(identsType[pos]) != 2)
+        code = code + ")";
+    checkSym(symRParen, ')');
+    return "0" + funcType + "R" + code;
+}
 function variableOrFunctionCall() {
     var pos = searchIdent(ident);
     if (pos < 0) {
@@ -575,55 +632,10 @@ function variableOrFunctionCall() {
         return genVar(pos);
     }
     else if (type == "f" || type == "x") {
-        if (type == "x" && symKind != symLParen)
-            return genVar(pos);
-        var funcType = wcsmidstr(identsType[pos], 1, 1);
-        var code = "call " + identsName[pos] + " ";
-        checkSym(symLParen, '(');
-        if (symKind != symRParen) {
-            while (1) {
-                var codeParam = expression();
-                code = code + " " + wcsmidstr(codeParam, 3); // todo 型チェック
-                if (symKind != symComma)
-                    break;
-                code = code + ",";
-                nextSym();
-            }
-        }
-        checkSym(symRParen, ')');
-        pushTempCode(code + ";");
-        var tempVar = genTempVar(funcType);
-        pushTempCode(wcsmidstr(tempVar, 3) + "=" + genReturnVar(funcType) + ";");
-        return tempVar;
+        return functionCall(pos, type);
     }
     else if (type == "F") {
-        var funcType = wcsmidstr(identsType[pos], 1, 1);
-        var code;
-        var funcName = identsName[pos];
-        if (wcsleftstr(funcName, 1) == "_") {
-            funcName = wcsmidstr(funcName, 1);
-        }
-        if (funcType == "v")
-            code = funcName + " ";
-        else if (wcslen(identsType[pos]) == 2)
-            code = funcName;
-        else
-            code = identsName[pos] + "(";
-        checkSym(symLParen, '(');
-        if (symKind != symRParen) {
-            while (1) {
-                var codeParam = expression();
-                code = code + " " + wcsmidstr(codeParam, 3);
-                if (symKind != symComma)
-                    break;
-                code = code + ",";
-                nextSym();
-            }
-        }
-        if (funcType != "v" && wcslen(identsType[pos]) != 2)
-            code = code + ")";
-        checkSym(symRParen, ')');
-        return "0" + funcType + "R" + code;
+        return builtinFunction(pos);
     }
     else {
         syntaxError("不正な識別子です（コンパイラのバグ?）");
@@ -801,6 +813,7 @@ function defFunction(funcName) {
     var funcPos = 0;
     var funcType = "fv";
     var funcTypeFw = "";
+    var saveCurrentFuncType = currentFuncType; // currentFuncTypeを保存しておく
     if (currentLevel != 0)
         syntaxError('関数のネストはできません');
     if (funcName == "") {
@@ -841,6 +854,8 @@ function defFunction(funcName) {
         nextSym(); // 型名の読み飛ばし
     }
     funcType = funcType + paramTypes;
+    if (funcTypeFw != "" && wcsmidstr(funcType, 1) != wcsmidstr(funcTypeFw, 1))
+        syntaxError("関数の前方宣言と定義の型が異なっています");
     identsType[funcPos] = funcType; // forwardでない場合
     currentLevel = 1; // レベルをローカル（関数の中）とする
     checkSym(symLCurlyBrace, "{");
@@ -848,8 +863,16 @@ function defFunction(funcName) {
     checkSym(symRCurlyBrace, "}");
     nIdents = saveNIdents; // 識別子の個数を戻す（ローカル変数をテーブルから削除）
     currentLevel = 0; // レベルをグローバルに戻す
-    genCode("return;");
+    if (currentFuncType == "v")
+        genCode("return;");
+    else if (currentFuncType == "n")
+        genCode("return 0;");
+    else if (currentFuncType == "v")
+        genCode('return "";');
+    else
+        syntaxError("ありえない関数の型（コンパイラのバグ）");
     genCode("_end_" + funcName + ":");
+    currentFuncType = saveCurrentFuncType; // currentFuncTypeを戻す
 }
 function assignmentExpression() {
     var code = factor();
@@ -1026,6 +1049,8 @@ function doStatement() {
     currentContinueLabel = saveContinueLabel;
 }
 function returnStatement() {
+    if (currentFuncType == "")
+        syntaxError("関数定義の外でreturnはできません");
     if (symKind == symSemicolon) {
         if (currentFuncType != "v")
             syntaxError("returnの後に式が必要です");
@@ -1033,6 +1058,10 @@ function returnStatement() {
     }
     else {
         var code = expression();
+        if (currentFuncType == "v")
+            syntaxError("void型関数なのに値を返そうとしています");
+        if (wcsmidstr(code, 1, 1) != currentFuncType)
+            syntaxError("関数定義とreturnの型が違います");
         genCode("return " + wcsmidstr(code, 3) + ";");
     }
     return;
@@ -1186,6 +1215,9 @@ function str(n) {
 }
 function val(s) {
     return parseInt(s, 10);
+}
+function tolower(s) {
+    return s.toLowerCase();
 }
 function wcslen(s) {
     return s.length;
