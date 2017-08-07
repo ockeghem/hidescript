@@ -867,8 +867,8 @@ function defFunction(funcName) {
         genCode("return;");
     else if (currentFuncType == "n")
         genCode("return 0;");
-    else if (currentFuncType == "v")
-        genCode('return "";');
+    else if (currentFuncType == "s")
+        genCode('return \"\";');
     else
         syntaxError("ありえない関数の型（コンパイラのバグ）");
     genCode("_end_" + funcName + ":");
@@ -905,7 +905,6 @@ function assignmentExpression() {
             code = code + ";";
         genCode(code);
     }
-    return;
 }
 function checkType() {
     var typeName;
@@ -1064,7 +1063,6 @@ function returnStatement() {
             syntaxError("関数定義とreturnの型が違います");
         genCode("return " + wcsmidstr(code, 3) + ";");
     }
-    return;
 }
 function breakStatement() {
     if (validLabel(currentBreakLabel)) {
@@ -1073,7 +1071,6 @@ function breakStatement() {
     else {
         syntaxError("breakできません");
     }
-    return;
 }
 function continueStatement() {
     if (validLabel(currentContinueLabel)) {
@@ -1082,7 +1079,6 @@ function continueStatement() {
     else {
         syntaxError("continueできません");
     }
-    return;
 }
 statement = function () {
     if (symKind == symVar) {

@@ -1,3 +1,6 @@
-function foo(n : number) { return 0; }
+//message=ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãŒè¶³ã‚Šã¾ã›ã‚“
+//return=1
+//
+function foo(n : number) { }
 
-var x = foo();	// ƒpƒ‰ƒ[ƒ^‚ª‘«‚è‚È‚¢
+var x = foo();	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãŒè¶³ã‚Šãªã„

@@ -531,7 +531,7 @@ function genVar(pos: number): string {
     return code;
 }
 
-function getTempLabels(n: number) {
+function getTempLabels(n: number): number {
     var L = nTempLable;
     nTempLable = nTempLable + n;
     return L;
@@ -866,8 +866,8 @@ function defFunction(funcName: string): void {
         genCode("return;");
     else if (currentFuncType == "n")
         genCode("return 0;");
-    else if (currentFuncType == "v")
-        genCode('return "";');
+    else if (currentFuncType == "s")
+        genCode('return \"\";');
     else
         syntaxError("ありえない関数の型（コンパイラのバグ）");
     genCode("_end_" + funcName + ":");
@@ -904,7 +904,6 @@ function assignmentExpression(): void {
             code = code + ";";
         genCode(code);
     }
-    return;
 }
 
 function checkType(): string {
@@ -1066,7 +1065,6 @@ function returnStatement(): void { // todo 関数の型と戻り値の型の適�
             syntaxError("関数定義とreturnの型が違います");
         genCode("return " + wcsmidstr(code, 3) + ";");
     }
-    return;
 }
 
 function breakStatement(): void {
@@ -1075,7 +1073,6 @@ function breakStatement(): void {
     } else {
         syntaxError("breakできません");
     }
-    return;
 }
 
 function continueStatement(): void {
@@ -1084,7 +1081,6 @@ function continueStatement(): void {
     } else {
         syntaxError("continueできません");
     }
-    return;
 }
 
 statement = function (): void {
