@@ -1,5 +1,5 @@
 //message=パラメータが足りません
-//return=1
+//status=1
 //
 function foo(n : number) { }
 
