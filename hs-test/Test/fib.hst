@@ -1,5 +1,5 @@
 //status=0
-//diff=1
+//exec=1
 function fib(n : number) : number {
   if (n <= 2)
     return 1;
