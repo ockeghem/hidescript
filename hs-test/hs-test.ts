@@ -34,7 +34,7 @@ function getTestConditions(srcfile: string) {
         console.error(err);
         process.exit(1);
     }
-    const keys = ['message', 'status', 'diff'];
+    const keys = ['message', 'status', 'diff', 'exec'];
     const props = new Array();
     keys.forEach(function (key) {
         let result = getProperty(key, data);
@@ -50,10 +50,10 @@ function testScript(srcfile: string) {
     return spawnSync('node', [compiler, srcfile], opts);
 }
 
-function getOutFile(srcfile: string): string {
+function changeExt(srcfile: string, newext: string): string {
     const ext = path.extname(srcfile);
     const fname = path.basename(srcfile, ext);
-    const outfile = path.format({ dir: path.dirname(srcfile), name: fname, ext: ".mac" });  // 出力ファイルの組み立て
+    const outfile = path.format({ dir: path.dirname(srcfile), name: fname, ext: newext });  // 出力ファイルの組み立て
     return outfile;
 }
 
@@ -63,9 +63,9 @@ function diffFile(src1: string, src2: string): number {
     let status = 0;
     try {
         status = -1;
-        data1 = fs.readFileSync(getOutFile(src1), 'utf-8');
+        data1 = fs.readFileSync(src1, 'utf-8');
         status = -2;
-        data2 = fs.readFileSync(getOutFile(src2), 'utf-8');
+        data2 = fs.readFileSync(src2, 'utf-8');
     } catch (err) {
         // console.error(err);
         return status;
@@ -85,7 +85,8 @@ files.filter(function (file) {
     let ok = true;
     let s_result = "";
     if (cond['diff']) {
-        const r_diff = diffFile(testResult + "\\" + file, testRef + "\\" + file);
+        const r_diff = diffFile(changeExt(testResult + "\\" + file, ".mac"),
+                                changeExt(testRef + "\\" + file, ".mac"));
         // diffの実行
         checked = true;
         switch (r_diff) {
@@ -112,7 +113,7 @@ files.filter(function (file) {
         s_result += "-";
     }
     if (cond['status'] !== null) {
-        console.log(cond['status'] == result['status']);
+        // console.log(cond['status'] == result['status']);
         checked = true;
         if (cond['status'] == result['status']) {
             s_result += "o";
@@ -135,7 +136,44 @@ files.filter(function (file) {
     } else {
         s_result += "-";
     }
-    console.log("s_result : " + s_result);
+    if (cond['exec']) {
+        /*
+del fib.out
+echo start
+C:\PROGRA~1\Hidemaru\hidemaru.exe /x C:\Users\ms_000\Source\Repos\hidescript\hs-test\TestResult\fib.mac C:\Users\ms_000\Source\Repos\hidescript\hs-test\TestResult\fib.out
+echo end
+
+http://nodejs.jp/nodejs.org_ja/api/path.html
+        */
+        const r_diff = diffFile(changeExt(testResult + "\\" + file, ".out"),
+            changeExt(testRef + "\\" + file, ".out"));
+        // diffの実行
+        checked = true;
+        switch (r_diff) {
+            case 1:
+                s_result += "o";
+                break;
+            case 0:
+                ok = false;
+                s_result += "x";
+                break;
+            case -1:
+                ok = false;
+                s_result += "a";
+                break;
+            case -2:
+                ok = false;
+                s_result += "b";
+                break;
+            default:
+                console.log("Cannot happen");
+                process.exit(1);
+        }
+    } else {
+        s_result += "-";
+    }
+    var s_ok = ok ? "OK" : "NG";
+    console.log(file + "\t" + s_ok + "\t" + s_result);
 });
 
 process.exit(0);

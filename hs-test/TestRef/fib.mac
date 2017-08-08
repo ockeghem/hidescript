@@ -1,0 +1,19 @@
+﻿goto _end_fib
+fib:
+if ( ##1<=2) {
+return 1;
+}
+call fib  ##1-2;##_0=##return;call fib  ##1-1;##_1=##return;
+return ##_0+##_1;
+return 0;
+_end_fib:
+#x=1;
+goto _LL1
+_LL0:
+call fib  #x;#_0=##return;
+insert  str( #_0)+"\n";
+#x=#x+1;
+_LL1:
+if (#x<=10) goto _LL0
+_LL2:
+// compileAndExecute::Done
