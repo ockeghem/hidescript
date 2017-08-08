@@ -67,21 +67,72 @@ function diffFile(src1, src2) {
     return (data1 == data2) ? 1 : 0;
 }
 var files = fs.readdirSync(testDir);
-files.forEach(function (file) {
+files.filter(function (file) {
+    return /.*\.hst/.test(file);
+}).forEach(function (file) {
     var path = testDir + "\\" + file;
     var cond = getTestConditions(path);
     var result = testScript(path);
+    var checked = false;
+    var ok = true;
+    var s_result = "";
     if (cond['diff']) {
-        var x = diffFile(testResult + "\\" + file, testRef + "\\" + file);
+        var r_diff = diffFile(testResult + "\\" + file, testRef + "\\" + file);
         // diffの実行
+        checked = true;
+        switch (r_diff) {
+            case 1:
+                s_result += "o";
+                break;
+            case 0:
+                ok = false;
+                s_result += "x";
+                break;
+            case -1:
+                ok = false;
+                s_result += "a";
+                break;
+            case -2:
+                ok = false;
+                s_result += "b";
+                break;
+            default:
+                console.log("Cannot happen");
+                process.exit(1);
+        }
+    }
+    else {
+        s_result += "-";
     }
     if (cond['status'] !== null) {
         console.log(cond['status'] == result['status']);
+        checked = true;
+        if (cond['status'] == result['status']) {
+            s_result += "o";
+        }
+        else {
+            s_result += "x";
+            ok = false;
+        }
+    }
+    else {
+        s_result += "-";
     }
     if (cond['message'] !== null) {
-        console.log(cond['message'] == head(result['stdout']));
+        // console.log(cond['message'] == head(result['stdout']));
+        if (cond['message'] == head(result['stdout'])) {
+            s_result += "o";
+        }
+        else {
+            s_result += "x";
+            ok = false;
+        }
+        checked = true;
     }
-    var dummy = 1;
+    else {
+        s_result += "-";
+    }
+    console.log("s_result : " + s_result);
 });
 process.exit(0);
 //# sourceMappingURL=hs-test.js.map
