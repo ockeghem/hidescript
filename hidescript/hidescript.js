@@ -34,9 +34,9 @@ var symSemicolon = 24;
 var symColon = 25;
 var symAssignment = 26;
 var symLambdaOp = 27;
-var symUnaryOp = 30;
-var symBinaryOp = 32;
-var symAddOp = 33;
+var symLogicalNot = 30;
+var symBinaryOp = 31;
+var symAddOp = 32;
 var symLParen = 40;
 var symRParen = 41;
 var symLCurlyBrace = 42;
@@ -67,56 +67,59 @@ var operators = new Array();
 var opPriority = new Array();
 var hidePriority = new Array();
 //                      opPriority == 1 は、++ や -- のために予約
-operators[0] = "*";
+operators[0] = "!";
 opPriority[0] = 2;
-hidePriority[0] = "1";
-operators[1] = "/";
-opPriority[1] = 2;
+hidePriority[0] = "5";
+operators[1] = "*";
+opPriority[1] = 3;
 hidePriority[1] = "1";
-operators[2] = "%";
-opPriority[2] = 2;
+operators[2] = "/";
+opPriority[2] = 3;
 hidePriority[2] = "1";
-operators[3] = "+";
+operators[3] = "%";
 opPriority[3] = 3;
-hidePriority[3] = "2";
-operators[4] = "-";
-opPriority[4] = 3;
+hidePriority[3] = "1";
+operators[4] = "+";
+opPriority[4] = 4;
 hidePriority[4] = "2";
-operators[5] = "<";
+operators[5] = "-";
 opPriority[5] = 4;
-hidePriority[5] = "3";
-operators[6] = "<=";
-opPriority[6] = 4;
+hidePriority[5] = "2";
+operators[6] = "<";
+opPriority[6] = 5;
 hidePriority[6] = "3";
-operators[7] = ">";
-opPriority[7] = 4;
+operators[7] = "<=";
+opPriority[7] = 5;
 hidePriority[7] = "3";
-operators[8] = ">=";
-opPriority[8] = 4;
+operators[8] = ">";
+opPriority[8] = 5;
 hidePriority[8] = "3";
-operators[9] = "==";
+operators[9] = ">=";
 opPriority[9] = 5;
 hidePriority[9] = "3";
-operators[10] = "!=";
-opPriority[10] = 5;
+operators[10] = "==";
+opPriority[10] = 6;
 hidePriority[10] = "3";
-operators[11] = "&";
+operators[11] = "!=";
 opPriority[11] = 6;
-hidePriority[11] = "1";
-operators[12] = "^";
+hidePriority[11] = "3";
+operators[12] = "&";
 opPriority[12] = 7;
 hidePriority[12] = "1";
-operators[13] = "|";
+operators[13] = "^";
 opPriority[13] = 8;
 hidePriority[13] = "1";
-operators[14] = "&&";
+operators[14] = "|";
 opPriority[14] = 9;
-hidePriority[14] = "4";
-operators[15] = "||";
+hidePriority[14] = "1";
+operators[15] = "&&";
 opPriority[15] = 10;
 hidePriority[15] = "4";
+operators[16] = "||";
+opPriority[16] = 11;
+hidePriority[16] = "4";
 var opStart = 0;
-var opEnd = 15;
+var opEnd = 17;
 var ch = "";
 var srcText;
 var symKind;
@@ -160,6 +163,8 @@ registerBuiltinFunction("insert", "vs");
 registerBuiltinFunction("macrodir", "s");
 registerBuiltinFunction("message", "vs");
 registerBuiltinFunction("openfile", "vs");
+registerBuiltinFunction("quit", "v");
+registerBuiltinFunction("saveexit", "v");
 registerBuiltinFunction("selectall", "v");
 registerBuiltinFunction("selendx", "n");
 registerBuiltinFunction("selendy", "n");
@@ -343,12 +348,6 @@ function nextSym() {
                 syntaxError("意図しない文字があります");
             return;
         }
-        if (ch == '~') {
-            symKind = symUnaryOp;
-            operator = '~';
-            nextChar();
-            return;
-        }
         if (ch == '!') {
             ch = nextChar();
             if (ch == '=') {
@@ -357,7 +356,7 @@ function nextSym() {
                 nextChar();
             }
             else {
-                symKind = symUnaryOp;
+                symKind = symLogicalNot;
                 operator = '!';
             }
             return;
@@ -468,14 +467,14 @@ var currentBreakLabel = -1;
 var currentContinueLabel = -1;
 function genTempCode() {
     if (tempCode > "") {
-        insert(tempCode + "\n");
+        insert(tempCode + "\r\n");
         tempCode = "";
     }
     nTempVars = 0; // todo 試験的に実装 .. nTempVars をここでリセット
 }
 function genCode(code) {
     genTempCode();
-    insert(code + "\n");
+    insert(code + "\r\n");
 }
 function genReturnVar(type) {
     if (type == "s") {
@@ -669,7 +668,7 @@ function factor() {
 function unaryExpression() {
     var ops = "";
     var logicalNot = 0;
-    while (symKind == symAddOp || symKind == symUnaryOp) {
+    while (symKind == symAddOp || symKind == symLogicalNot) {
         if (operator == '!')
             logicalNot = 1;
         var ops = ops + operator;
@@ -680,7 +679,8 @@ function unaryExpression() {
     var type1 = wcsmidstr(code, 1, 1);
     var LRvalue = wcsmidstr(code, 2, 1);
     code = wcsmidstr(code, 3);
-    if (symKind == symUnaryOp && type1 != "n")
+    //if (symKind == symLogicalNot && type1 != "n")    // todo 単項 + - でも数値型が必要ではないのか?
+    if (ops != "" && type1 != "n")
         syntaxError("数値型が必要です");
     if (ops != "" && priority > "1")
         code = ops + "(" + code + ")";
@@ -1131,7 +1131,7 @@ var outBuffer = "";
 function compile(src) {
     initCompiler(src);
     statementList(symEOF);
-    insert('// compileAndExecute::Done\n');
+    insert('// compileAndExecute::Done\r\n');
     return outBuffer;
 }
 if (version() > 0) {
