@@ -1,0 +1,8 @@
+//message=関数の前方宣言と定義の型が異なっています
+//status=1
+//
+var foo: (x: number) => number;
+foo = function(): number { return 1; }
+
+var x = foo(1);
+quit();

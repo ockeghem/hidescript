@@ -1,4 +1,5 @@
 ﻿const compiler = '..\\hidescript\\hidescript.js';
+const hidemarupath = "C:\\Program Files\\Hidemaru\\hidemaru.exe";
 const testDir = '.\\Test';
 const testResult = '.\\TestResult';
 const testRef = '.\\TestRef';
@@ -76,7 +77,7 @@ function diffFile(src1: string, src2: string): number {
 
 var files = fs.readdirSync(testDir);
 files.filter(function (file) {
-    return /.*\.hst/.test(file);
+    return /\.hst$/.test(file);
 }).forEach(function (file) {
     const path = testDir + "\\" + file;
     const cond = getTestConditions(path);
@@ -84,7 +85,7 @@ files.filter(function (file) {
     let checked = false;
     let ok = true;
     let s_result = "";
-    if (cond['diff']) {
+    if (cond['diff'] == "1") {
         const r_diff = diffFile(changeExt(testResult + "\\" + file, ".mac"),
                                 changeExt(testRef + "\\" + file, ".mac"));
         // diffの実行
@@ -113,7 +114,6 @@ files.filter(function (file) {
         s_result += "-";
     }
     if (cond['status'] !== null) {
-        // console.log(cond['status'] == result['status']);
         checked = true;
         if (cond['status'] == result['status']) {
             s_result += "o";
@@ -125,7 +125,6 @@ files.filter(function (file) {
         s_result += "-";
     }
     if (cond['message'] !== null) {
-        // console.log(cond['message'] == head(result['stdout']));
         if (cond['message'] == head(result['stdout'])) {
             s_result += "o";
         } else {
@@ -136,38 +135,53 @@ files.filter(function (file) {
     } else {
         s_result += "-";
     }
-    if (cond['exec']) {
-        /*
-del fib.out
-echo start
-C:\PROGRA~1\Hidemaru\hidemaru.exe /x C:\Users\ms_000\Source\Repos\hidescript\hs-test\TestResult\fib.mac C:\Users\ms_000\Source\Repos\hidescript\hs-test\TestResult\fib.out
-echo end
+    // if (cond['exec'] && cond['status'] == 0) {
+    if (result.status == 0) {  // コンパイルが成功したら実行してみる
+        const macrofile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".mac");
+        const outfile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".out");
 
-http://nodejs.jp/nodejs.org_ja/api/path.html
-        */
-        const r_diff = diffFile(changeExt(testResult + "\\" + file, ".out"),
-            changeExt(testRef + "\\" + file, ".out"));
-        // diffの実行
-        checked = true;
-        switch (r_diff) {
-            case 1:
-                s_result += "o";
-                break;
-            case 0:
-                ok = false;
-                s_result += "x";
-                break;
-            case -1:
-                ok = false;
-                s_result += "a";
-                break;
-            case -2:
-                ok = false;
-                s_result += "b";
-                break;
-            default:
-                console.log("Cannot happen");
-                process.exit(1);
+        try {
+            fs.unlinkSync(outfile);
+        } catch (err) {
+            var dummy = 1;  // デバッグ用ダミー
+        }
+        var run_result = spawnSync(hidemarupath, ["/x", macrofile, outfile], { encoding: 'utf8' });
+
+        // exec=1 の場合は実行結果のチェック
+        if (cond['exec']) {
+            /***
+                    if (result.status != 0) {
+                        ok = false;
+                        s_result += "f";
+                    } else {
+            **/
+            /*  http://nodejs.jp/nodejs.org_ja/api/path.html    */
+            const r_diff = diffFile(changeExt(testResult + "\\" + file, ".out"),
+                changeExt(testRef + "\\" + file, ".out"));
+            // diffの実行
+            checked = true;
+            switch (r_diff) {
+                case 1:
+                    s_result += "o";
+                    break;
+                case 0:
+                    ok = false;
+                    s_result += "x";
+                    break;
+                case -1:
+                    ok = false;
+                    s_result += "a";
+                    break;
+                case -2:
+                    ok = false;
+                    s_result += "b";
+                    break;
+                default:
+                    console.log("Cannot happen");
+                    process.exit(1);
+            }
+        } else {
+            s_result += "-";
         }
     } else {
         s_result += "-";

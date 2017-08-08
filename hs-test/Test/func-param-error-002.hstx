@@ -1,0 +1,7 @@
+//message=パラメータの型が違います
+//status=1
+//
+function foo(n : number): number { return 0; }
+
+var x = foo("a");	// パラメータの型が違います
+quit();

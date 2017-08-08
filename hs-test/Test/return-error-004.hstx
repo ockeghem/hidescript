@@ -1,0 +1,7 @@
+//message=returnの後に式が必要です
+//status=1
+//
+function foo(x: number, s: string) : string {
+  return;
+}
+quit();

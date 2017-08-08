@@ -4,3 +4,4 @@
 function foo(n : number) { }
 
 var x = foo();	// パラメータが足りない
+quit();

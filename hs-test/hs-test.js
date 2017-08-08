@@ -1,4 +1,5 @@
 var compiler = '..\\hidescript\\hidescript.js';
+var hidemarupath = "C:\\Program Files\\Hidemaru\\hidemaru.exe";
 var testDir = '.\\Test';
 var testResult = '.\\TestResult';
 var testRef = '.\\TestRef';
@@ -68,7 +69,7 @@ function diffFile(src1, src2) {
 }
 var files = fs.readdirSync(testDir);
 files.filter(function (file) {
-    return /.*\.hst/.test(file);
+    return /\.hst$/.test(file);
 }).forEach(function (file) {
     var path = testDir + "\\" + file;
     var cond = getTestConditions(path);
@@ -76,7 +77,7 @@ files.filter(function (file) {
     var checked = false;
     var ok = true;
     var s_result = "";
-    if (cond['diff']) {
+    if (cond['diff'] == "1") {
         var r_diff = diffFile(changeExt(testResult + "\\" + file, ".mac"), changeExt(testRef + "\\" + file, ".mac"));
         // diffの実行
         checked = true;
@@ -105,7 +106,6 @@ files.filter(function (file) {
         s_result += "-";
     }
     if (cond['status'] !== null) {
-        // console.log(cond['status'] == result['status']);
         checked = true;
         if (cond['status'] == result['status']) {
             s_result += "o";
@@ -119,7 +119,6 @@ files.filter(function (file) {
         s_result += "-";
     }
     if (cond['message'] !== null) {
-        // console.log(cond['message'] == head(result['stdout']));
         if (cond['message'] == head(result['stdout'])) {
             s_result += "o";
         }
@@ -132,37 +131,52 @@ files.filter(function (file) {
     else {
         s_result += "-";
     }
-    if (cond['exec']) {
-        /*
-del fib.out
-echo start
-C:\PROGRA~1\Hidemaru\hidemaru.exe /x C:\Users\ms_000\Source\Repos\hidescript\hs-test\TestResult\fib.mac C:\Users\ms_000\Source\Repos\hidescript\hs-test\TestResult\fib.out
-echo end
-
-http://nodejs.jp/nodejs.org_ja/api/path.html
-        */
-        var r_diff = diffFile(changeExt(testResult + "\\" + file, ".out"), changeExt(testRef + "\\" + file, ".out"));
-        // diffの実行
-        checked = true;
-        switch (r_diff) {
-            case 1:
-                s_result += "o";
-                break;
-            case 0:
-                ok = false;
-                s_result += "x";
-                break;
-            case -1:
-                ok = false;
-                s_result += "a";
-                break;
-            case -2:
-                ok = false;
-                s_result += "b";
-                break;
-            default:
-                console.log("Cannot happen");
-                process.exit(1);
+    // if (cond['exec'] && cond['status'] == 0) {
+    if (result.status == 0) {
+        var macrofile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".mac");
+        var outfile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".out");
+        try {
+            fs.unlinkSync(outfile);
+        }
+        catch (err) {
+            var dummy = 1; // デバッグ用ダミー
+        }
+        var run_result = spawnSync(hidemarupath, ["/x", macrofile, outfile], { encoding: 'utf8' });
+        // exec=1 の場合は実行結果のチェック
+        if (cond['exec']) {
+            /***
+                    if (result.status != 0) {
+                        ok = false;
+                        s_result += "f";
+                    } else {
+            **/
+            /*  http://nodejs.jp/nodejs.org_ja/api/path.html    */
+            var r_diff = diffFile(changeExt(testResult + "\\" + file, ".out"), changeExt(testRef + "\\" + file, ".out"));
+            // diffの実行
+            checked = true;
+            switch (r_diff) {
+                case 1:
+                    s_result += "o";
+                    break;
+                case 0:
+                    ok = false;
+                    s_result += "x";
+                    break;
+                case -1:
+                    ok = false;
+                    s_result += "a";
+                    break;
+                case -2:
+                    ok = false;
+                    s_result += "b";
+                    break;
+                default:
+                    console.log("Cannot happen");
+                    process.exit(1);
+            }
+        }
+        else {
+            s_result += "-";
         }
     }
     else {

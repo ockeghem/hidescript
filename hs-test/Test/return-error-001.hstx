@@ -1,0 +1,5 @@
+//message=関数定義の外でreturnはできません
+//status=1
+//
+return;
+quit();

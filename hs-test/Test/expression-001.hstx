@@ -1,8 +1,14 @@
+//status=0
+//diff=1
+//exec=1
+//
 var a = 1;
 var b = -(a + 1);
 b = +(a + 1);
 b = !(a + 1);
-b = ~(a + 1);
+b = !a * 1;
 b = a % 3;
 b = a || !a;
 var c = ---(a + 1);
+
+quit();

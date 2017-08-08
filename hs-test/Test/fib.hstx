@@ -11,4 +11,4 @@ while (x <= 10) {
   insert(str(fib(x)) + "\n");
   x = x + 1;
 }
-
+saveexit();	// 必ず saveexit(); で終わること
