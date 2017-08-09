@@ -500,6 +500,22 @@ function popTempCode(): string {
 var expression: () => string;
 var statement: () => void;
 
+function getCodePriority(code: string): string {
+    return wcsmidstr(code, 0, 1);
+}
+
+function getCodeType(code: string): string {
+    return wcsmidstr(code, 1, 1);
+}
+
+function getCodeLR(code: string): string {
+    return wcsmidstr(code, 2, 1);
+}
+
+function getCodeBody(code: string): string {
+    return wcsmidstr(code, 3);        
+}
+
 function genVar(pos: number): string {
     var varType = wcsmidstr(identsType[pos], 0, 1);
     var typeChar = varType;
@@ -529,7 +545,7 @@ function genVar(pos: number): string {
         while (symKind == symLBracket) {
             nextSym();
             var code2 = expression();
-            code = code + "[" + wcsmidstr(code2, 3) + "]";       // todo code2が数値であることのチェック
+            code = code + "[" + getCodeBody(code2) + "]";       // todo code2が数値であることのチェック
             checkSym(symRBracket, "]");
         }
     }
@@ -574,10 +590,10 @@ function genParameterCode(paramTypes: string): string {
             if (paramType == "")
                 syntaxError("パラメータが多すぎます");
             var codeParam = expression();
-            var codeType = wcsmidstr(codeParam, 1, 1); // パラメータコードの型を取り出し
+            var codeType = getCodeType(codeParam); // パラメータコードの型を取り出し
             if (tolower(paramType) != codeType)
                 syntaxError("パラメータの型が違います");
-            paramCode = paramCode + " " + wcsmidstr(codeParam, 3);        // todo 型のチェック
+            paramCode = paramCode + " " + getCodeBody(codeParam);        // todo 型のチェック
             paramTypes = wcsmidstr(paramTypes, 1);
             if (symKind != symComma)
                 break;
@@ -600,7 +616,7 @@ function functionCall(pos: number, type: string): string {
     checkSym(symRParen, ')');
     pushTempCode(code + ";");
     var tempVar = genTempVar(funcType);
-    pushTempCode(wcsmidstr(tempVar, 3) + "=" + genReturnVar(funcType) + ";");
+    pushTempCode(getCodeBody(tempVar) + "=" + genReturnVar(funcType) + ";");
     return tempVar;
 }
 
@@ -608,12 +624,12 @@ function builtinPrintln(): string {
     checkSym(symLParen, '(');
     var code = expression();
     checkSym(symRParen, ')');
-    var type1 = wcsmidstr(code, 1, 1);
+    var type1 = getCodeType(code);
     if (type1 == "n") {
-        return "0vRinsert str(" + wcsmidstr(code, 3) + ')+\"\\n\"';
+        return "0vRinsert str(" + getCodeBody(code) + ')+\"\\n\"';
 
     } else if (type1 == "s") {
-        return "0vRinsert " + wcsmidstr(code, 3) + '+\"\\n\"';
+        return "0vRinsert " + getCodeBody(code) + '+\"\\n\"';
     } else {
         syntaxError("builtinPrintlnで予期しない型");
     }
@@ -664,10 +680,10 @@ function factor(): string {
     if (symKind == symLParen) { 
         nextSym();
         var code = expression();
-        var priority = wcsmidstr(code, 0, 1);
+        var priority = getCodePriority(code);
         checkSym(symRParen, ")");
 
-        return wcsmidstr(code, 0, 2) + "R" + wcsmidstr(code, 3);
+        return getCodePriority(code) + getCodeType(code) + "R" + getCodeBody(code);
     } else if (symKind == symIdent) {
         return variableOrFunctionCall();
     } else if (symKind == symDigit) {
@@ -708,10 +724,10 @@ function unaryExpression(): string {
             firstPriority = opPriority;
     }
     var code = factor();
-    var priority = wcsmidstr(code, 0, 1);
-    var type1 = wcsmidstr(code, 1, 1);
-    var LRvalue = wcsmidstr(code, 2, 1);
-    code = wcsmidstr(code, 3);
+    var priority = getCodePriority(code);
+    var type1 = getCodeType(code);
+    var LRvalue = getCodeLR(code);
+    code = getCodeBody(code);
     if (ops != "" && type1 != "n")    // ! 以外の単項演算子で数値型のチェックが漏れていた
         syntaxError("数値型が必要です");
     if (ops != "" && priority > "1")
@@ -767,15 +783,13 @@ function checkBinOpType(op: string, type1: string, type2: string): string {
 function genBianryOp(code1: string, op: string, code2: string): string {
     var opPriority = getHidePriority(op);
 
-    var priority1 = wcsmidstr(code1, 0, 1);
-    var type1 = wcsmidstr(code1, 1, 1);
-    // var LRvalue1 = wcsmidstr(code1, 2, 1);
-    code1 = wcsmidstr(code1, 3);
+    var priority1 = getCodePriority(code1);
+    var type1 = getCodeType(code1);
+    code1 = getCodeBody(code1);
 
-    var priority2 = wcsmidstr(code2, 0, 1);
-    var type2 = wcsmidstr(code2, 1, 1);
-    // var LRvalue2 = wcsmidstr(code2, 2, 1);
-    code2 = wcsmidstr(code2, 3);
+    var priority2 = getCodePriority(code2);
+    var type2 = getCodeType(code2);
+    code2 = getCodeBody(code2);
     var etype = checkBinOpType(op, type1, type2);
     if (priority1 > opPriority || ((priority1 == "4") && (opPriority == "4")) )
         code1 = "(" + code1 + ")";
@@ -918,9 +932,9 @@ function defFunction(funcName: string): void {
 
 function assignmentExpression(): void {
     var code = factor();
-    var type1 = wcsmidstr(code, 1, 1);
-    var LRvalue = wcsmidstr(code, 2, 1);
-    code = wcsmidstr(code, 3);
+    var type1 = getCodeType(code);
+    var LRvalue = getCodeLR(code);
+    code = getCodeBody(code);
     if (symKind == symAssignment) {
         if (LRvalue == "R")
             syntaxError("代入文の左辺には左辺値が必要です");
@@ -930,10 +944,10 @@ function assignmentExpression(): void {
             defFunction(wcsmidstr(code, 1));
         } else {
             var code2 = expression();
-            if (wcsmidstr(code2, 1, 1) != type1) {
+            if (getCodeType(code2) != type1) {
                 syntaxError("文字列と数値の型が異なる代入はできません");
             }
-            code = code + "=" + wcsmidstr(code2, 3);
+            code = code + "=" + getCodeBody(code2);
             genCode(code + ";");
         }
     } else {
@@ -1017,10 +1031,10 @@ function varStatement() : void {
     } else if (symKind == symAssignment) {
         nextSym();
         var code1 = expression();
-        typeName = wcsmidstr(code1, 1, 1);
+        typeName = getCodeType(code1);
         var pos = register(varName, typeName, currentLevel);
         var code2 = genVar(pos);
-        genCode(wcsmidstr(code2, 3) + "=" + wcsmidstr(code1, 3) + ";");       // todo 左辺の型チェックが抜けている
+        genCode(getCodeBody(code2) + "=" + getCodeBody(code1) + ";");       // todo 左辺の型チェックが抜けている
     } else {
         syntaxError('式またはコロンが必要です');
     }
@@ -1038,7 +1052,7 @@ function ifStatement(): void {
     checkSym(symLParen, "(");
     var cmpCode = expression();
     checkSym(symRParen, ")");
-    genCode("if ( " + wcsmidstr(cmpCode, 3) + ") {");
+    genCode("if ( " + getCodeBody(cmpCode) + ") {");
     var code = statement();
     if (symKind == symElse) {
         nextSym();
@@ -1065,7 +1079,7 @@ function whileStatement(): void {
     genLabel(label + 1); // continue用ラベル
 
     pushTempCode(tempCode);
-    genCode("if (" + wcsmidstr(cmpCode, 3) + ") goto " + getLabel(label));
+    genCode("if (" + getCodeBody(cmpCode) + ") goto " + getLabel(label));
     genLabel(label + 2); // break用ラベル
     currentBreakLabel = saveBreakLabel;
     currentContinueLabel = saveContinueLabel;
@@ -1085,7 +1099,7 @@ function doStatement(): void {
     checkSym(symLParen, "(");
     var cmpCode = expression(); // todo: 式の型をチェックしていない…真偽値を得る関数を作ってもいいかも
     checkSym(symRParen, ")");
-    genCode("if (" + wcsmidstr(cmpCode, 3) + ") goto " + getLabel(label));
+    genCode("if (" + getCodeBody(cmpCode) + ") goto " + getLabel(label));
     genLabel(label + 2); // break用ラベル
     currentBreakLabel = saveBreakLabel;
     currentContinueLabel = saveContinueLabel;
@@ -1102,9 +1116,9 @@ function returnStatement(): void { // todo 関数の型と戻り値の型の適�
         var code = expression();
         if (currentFuncType == "v")
             syntaxError("void型関数なのに値を返そうとしています");
-        if (wcsmidstr(code, 1, 1) != currentFuncType)
+        if (getCodeType(code) != currentFuncType)
             syntaxError("関数定義とreturnの型が違います");
-        genCode("return " + wcsmidstr(code, 3) + ";");
+        genCode("return " + getCodeBody(code) + ";");
     }
 }
 
