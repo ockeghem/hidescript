@@ -147,6 +147,7 @@ registerBuiltinFunction("endmacro", "v");
 registerBuiltinFunction("findhidemaru", "ns");
 registerBuiltinFunction("gettext", "snnnn");
 registerBuiltinFunction("insert", "vs");
+registerBuiltinFunction("insertln", "");    // 特殊組み込み関数
 registerBuiltinFunction("macrodir", "s");
 registerBuiltinFunction("message", "vs");
 registerBuiltinFunction("openfile", "vs");
@@ -603,10 +604,27 @@ function functionCall(pos: number, type: string): string {
     return tempVar;
 }
 
+function builtinPrintln(): string {
+    checkSym(symLParen, '(');
+    var code = expression();
+    checkSym(symRParen, ')');
+    var type1 = wcsmidstr(code, 1, 1);
+    if (type1 == "n") {
+        return "0vRinsert str(" + wcsmidstr(code, 3) + ')+\"\\n\"';
+
+    } else if (type1 == "s") {
+        return "0vRinsert " + wcsmidstr(code, 3) + '+\"\\n\"';
+    } else {
+        syntaxError("builtinPrintlnで予期しない型");
+    }
+}
+
 function builtinFunction(pos: number): string {
     var funcType = wcsmidstr(identsType[pos], 1, 1);
     var code: string;
     var funcName = identsName[pos];
+    if (funcName == "insertln")
+        return builtinPrintln();
     if (wcsleftstr(funcName, 1) == "_") {
         funcName = wcsmidstr(funcName, 1);
     }
