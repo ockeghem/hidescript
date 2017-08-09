@@ -1238,6 +1238,10 @@ var path = require('path');
 var fs = require('fs');
 var argv = process.argv;
 var srcfile = argv[2]; // ソースファイル名
+if (!srcfile) {
+    console.log('Usage: node hidescript.js source-file');
+    process.exit(1);
+}
 var ext = path.extname(srcfile);
 var fname = path.basename(srcfile, ext);
 var outfile = path.format({ dir: macrodir(), name: fname, ext: ".mac" }); // 出力ファイルの組み立て
