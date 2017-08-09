@@ -34,7 +34,7 @@ var symSemicolon = 24;
 var symColon = 25;
 var symAssignment = 26;
 var symLambdaOp = 27;
-var symLogicalNot = 30;
+var symUnaryOp = 30;
 var symBinaryOp = 31;
 var symAddOp = 32;
 var symLParen = 40;
@@ -348,6 +348,12 @@ function nextSym() {
                 syntaxError("意図しない文字があります");
             return;
         }
+        if (ch == '~') {
+            symKind = symUnaryOp;
+            operator = '~';
+            nextChar();
+            return;
+        }
         if (ch == '!') {
             ch = nextChar();
             if (ch == '=') {
@@ -356,7 +362,7 @@ function nextSym() {
                 nextChar();
             }
             else {
-                symKind = symLogicalNot;
+                symKind = symUnaryOp;
                 operator = '!';
             }
             return;
@@ -384,7 +390,7 @@ function nextSym() {
             }
             return;
         }
-        if (ch == '*' || ch == '%') {
+        if (ch == '*' || ch == '%' || ch == '^') {
             symKind = symBinaryOp;
             operator = ch;
             nextChar();
@@ -670,10 +676,15 @@ function unaryExpression() {
     var firstPriority = "";
     var lastPriority = "9";
     var nParens = 0;
-    while (symKind == symAddOp || symKind == symLogicalNot) {
+    while (symKind == symAddOp || symKind == symUnaryOp) {
         var opPriority = "2";
-        if (operator == '!')
+        if (operator == '!') {
             opPriority = "5";
+        }
+        else if (operator == '~') {
+            operator = "(-1) ^ ";
+            opPriority = "5";
+        }
         if (opPriority > lastPriority) {
             ops = ops + "(" + operator;
             nParens = nParens + 1;
