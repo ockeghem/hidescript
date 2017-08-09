@@ -1,6 +1,7 @@
 //status=0
 //exec=1
-function fib(n : number) : number {
+function fib(n : number) : number {		// hidescript 用
+// function fib(n) {				// node.js 用
   if (n <= 2)
     return 1;
   return fib(n - 2) + fib(n - 1);
@@ -8,7 +9,15 @@ function fib(n : number) : number {
 
 var x = 1;
 while (x <= 10) {
-  insert(str(fib(x)) + "\n");
+  insertln(fib(x));
   x = x + 1;
 }
 saveexit();	// 必ず saveexit(); で終わること
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}

@@ -1,0 +1,12 @@
+﻿#x=5;
+#a=(-1) ^ #x;
+insert  str( #a)+"\n";
+#a=-((-1) ^ #x);
+insert  str( #a)+"\n";
+#a=(-1) ^ (#x+5);
+insert  str( #a)+"\n";
+#a=-((-1) ^ (#x+5));
+insert  str( #a)+"\n";
+insert  "done\n";
+saveexit ;
+// compileAndExecute::Done

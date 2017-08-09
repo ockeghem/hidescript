@@ -5,4 +5,5 @@ return 0;
 _end_foo:
 call foo  1;#_0=##return;
 #x=#_0;
+quit ;
 // compileAndExecute::Done

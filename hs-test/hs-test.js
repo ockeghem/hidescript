@@ -62,7 +62,8 @@ function diffFile(src1, src2) {
         data2 = fs.readFileSync(src2, 'utf-8');
     }
     catch (err) {
-        // console.error(err);
+        if (err.code !== "ENOENT")
+            throw err;
         return status;
     }
     return (data1 == data2) ? 1 : 0;
@@ -136,7 +137,7 @@ function doIt(file) {
     }
     if (result.status == 0) {
         try {
-            fs.unlinkSync(outfile);
+            fs.unlinkSync(outfile); // 実行結果のファイルを先に削除しておく
         }
         catch (err) {
             if (err.code !== "ENOENT")

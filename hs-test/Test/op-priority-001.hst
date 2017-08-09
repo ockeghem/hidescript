@@ -5,16 +5,30 @@
 var x = -5;
 var z = 0;
 var a = - x + 1;		// a = -(-5) + 1 = 6
-insert(str(a) + "\n");
+insertln(a);
 
 a = !z + 1;		// a = (!0) + 1 = 1 + 1 = 2
-insert(str(a) + "\n");
+insertln(a);
 
 a = - ! z + 1;		// a = (-(! 0))) + 1 = (-1) + 1 = 0
-insert(str(a) + "\n");
+insertln(a);
 
-a = ! - x + 1;		// a = (!(5)) + 1 = 0 + 1 = 1
-insert(str(a) + "\n");
+a = ! - a + 1;		// a = (!(5)) + 1 = 0 + 1 = 1
+insertln(a);
 
-insert("done\n");
+a = -1 ^ x;
+insertln(a);
+
+a = -10 < x;
+insertln(a);
+
+insertln("done");
 saveexit();
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}

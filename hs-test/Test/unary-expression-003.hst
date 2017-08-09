@@ -2,15 +2,19 @@
 //diff=1
 //exec=1
 //
-var a = 1;
-var b = -(a + 1);
-b = +(a + 1);
-b = !(a + 1);
-b = !a * 1;
-b = a % 3;
-b = a || !a;
-var c = - - -(b + 1);
-insertln(c);
+var x = 5;
+
+var a = ~x;
+insertln(a);
+
+a = -~x;
+insertln(a);
+
+a = ~(x + 5);
+insertln(a);
+
+a = -~(x + 5);
+insertln(a);
 
 insertln("done");
 saveexit();
