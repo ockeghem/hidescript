@@ -679,7 +679,6 @@ function unaryExpression() {
     var type1 = wcsmidstr(code, 1, 1);
     var LRvalue = wcsmidstr(code, 2, 1);
     code = wcsmidstr(code, 3);
-    //if (symKind == symLogicalNot && type1 != "n")    // todo 単項 + - でも数値型が必要ではないのか?
     if (ops != "" && type1 != "n")
         syntaxError("数値型が必要です");
     if (ops != "" && priority > "1")

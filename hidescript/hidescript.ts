@@ -659,7 +659,7 @@ function factor(): string {
     }
 }
 
-function unaryExpression(): string { // todo  -(1 + 5) みたいな場合の対処
+function unaryExpression(): string {
     var ops = "";
     var logicalNot = 0;
     while (symKind == symAddOp || symKind == symLogicalNot) {
@@ -673,8 +673,7 @@ function unaryExpression(): string { // todo  -(1 + 5) みたいな場合の対�
     var type1 = wcsmidstr(code, 1, 1);
     var LRvalue = wcsmidstr(code, 2, 1);
     code = wcsmidstr(code, 3);
-    //if (symKind == symLogicalNot && type1 != "n")    // todo 単項 + - でも数値型が必要ではないのか?
-    if (ops != "" && type1 != "n")    // todo 単項 + - でも数値型が必要ではないのか?
+    if (ops != "" && type1 != "n")    // ! 以外の単項演算子で数値型のチェックが漏れていた
         syntaxError("数値型が必要です");
     if (ops != "" && priority > "1")
         code = ops + "(" + code + ")";
