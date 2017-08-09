@@ -74,47 +74,51 @@ function diffFile(src1: string, src2: string): number {
     return (data1 == data2) ? 1 : 0;
 }
 
+function compareMacro(file1: string, file2: string): string {
+    const r_diff = diffFile(file1, file2);
+    // diffの実行
+    var result: string;
+    switch (r_diff) {
+        case 1:
+            return "o";
+        case 0:
+            return "x";
+        case -1:
+            return "a";
+        case -2:
+            return "b";
+        default:
+            console.log("Cannot happen");
+            process.exit(1);
+    }
+}
 
-var files = fs.readdirSync(testDir);
-files.filter(function (file) {
-    return /\.hst$/.test(file);
-}).forEach(function (file) {
+function doIt(file : string): void {
     const path = testDir + "\\" + file;
     const cond = getTestConditions(path);
-    const result = testScript(path);
-    let checked = false;
+    const macrofile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".mac");
+    const outfile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".out");
+
+    try {
+        fs.unlinkSync(macrofile); // コンパイル結果のマクロファイルを削除しておく
+    } catch (err) {
+        if (err.code !== "ENOENT")
+            throw err;
+    }
+    const result = testScript(path);    // コンパイル実行
+
+    // 以下、コンパイル結果のチェック
     let ok = true;
     let s_result = "";
     if (cond['diff'] == "1") {
-        const r_diff = diffFile(changeExt(testResult + "\\" + file, ".mac"),
-                                changeExt(testRef + "\\" + file, ".mac"));
-        // diffの実行
-        checked = true;
-        switch (r_diff) {
-            case 1:
-                s_result += "o";
-                break;
-            case 0:
-                ok = false;
-                s_result += "x";
-                break;
-            case -1:
-                ok = false;
-                s_result += "a";
-                break;
-            case -2:
-                ok = false;
-                s_result += "b";
-                break;
-            default:
-                console.log("Cannot happen");
-                process.exit(1);
-        }
+        const r = compareMacro(macrofile, changeExt(testRef + "\\" + file, ".mac"));
+        s_result += r;
+        if (r != "o")
+            ok = false;
     } else {
         s_result += "-";
     }
     if (cond['status'] !== null) {
-        checked = true;
         if (cond['status'] == result['status']) {
             s_result += "o";
         } else {
@@ -131,55 +135,27 @@ files.filter(function (file) {
             s_result += "x";
             ok = false;
         }
-        checked = true;
     } else {
         s_result += "-";
     }
-    // if (cond['exec'] && cond['status'] == 0) {
-    if (result.status == 0) {  // コンパイルが成功したら実行してみる
-        const macrofile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".mac");
-        const outfile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".out");
 
+    if (result.status == 0) {  // コンパイルが成功したら実行してみる
         try {
             fs.unlinkSync(outfile);
         } catch (err) {
-            var dummy = 1;  // デバッグ用ダミー
+            if (err.code !== "ENOENT")
+                throw err;
         }
         var run_result = spawnSync(hidemarupath, ["/x", macrofile, outfile], { encoding: 'utf8' });
 
         // exec=1 の場合は実行結果のチェック
-        if (cond['exec']) {
-            /***
-                    if (result.status != 0) {
-                        ok = false;
-                        s_result += "f";
-                    } else {
-            **/
-            /*  http://nodejs.jp/nodejs.org_ja/api/path.html    */
-            const r_diff = diffFile(changeExt(testResult + "\\" + file, ".out"),
-                changeExt(testRef + "\\" + file, ".out"));
+        if (cond['exec'] == "1") {
+            //  http://nodejs.jp/nodejs.org_ja/api/path.html 
             // diffの実行
-            checked = true;
-            switch (r_diff) {
-                case 1:
-                    s_result += "o";
-                    break;
-                case 0:
-                    ok = false;
-                    s_result += "x";
-                    break;
-                case -1:
-                    ok = false;
-                    s_result += "a";
-                    break;
-                case -2:
-                    ok = false;
-                    s_result += "b";
-                    break;
-                default:
-                    console.log("Cannot happen");
-                    process.exit(1);
-            }
+            const r = compareMacro(changeExt(testResult + "\\" + file, ".out"), changeExt(testRef + "\\" + file, ".out"));
+            s_result += r;
+            if (r != "o")
+                ok = false;
         } else {
             s_result += "-";
         }
@@ -188,6 +164,11 @@ files.filter(function (file) {
     }
     var s_ok = ok ? "OK" : "NG";
     console.log(file + "\t" + s_ok + "\t" + s_result);
-});
+}
+
+var files = fs.readdirSync(testDir);
+files.filter(function (file) {
+    return /\.hst$/.test(file);
+}).forEach(doIt);
 
 process.exit(0);
