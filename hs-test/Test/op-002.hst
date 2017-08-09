@@ -1,0 +1,16 @@
+//status=0
+//exec=1
+//
+var a = 5 | 11;		// 0101 | 1011 = 1111 (15)
+insertln(a);
+
+insertln("done");
+saveexit();
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}

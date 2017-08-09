@@ -111,14 +111,6 @@ function doIt(file : string): void {
     // 以下、コンパイル結果のチェック
     let ok = true;
     let s_result = "";
-    if (cond['diff'] == "1") {
-        const r = compareMacro(macrofile, changeExt(testRef + "\\" + file, ".mac"));
-        s_result += r;
-        if (r != "o")
-            ok = false;
-    } else {
-        s_result += "-";
-    }
     if (cond['status'] !== null) {
         if (cond['status'] == result['status']) {
             s_result += "o";
@@ -136,6 +128,14 @@ function doIt(file : string): void {
             s_result += "x";
             ok = false;
         }
+    } else {
+        s_result += "-";
+    }
+    if (cond['diff'] == "1") {
+        const r = compareMacro(macrofile, changeExt(testRef + "\\" + file, ".mac"));
+        s_result += r;
+        if (r != "o")
+            ok = false;
     } else {
         s_result += "-";
     }

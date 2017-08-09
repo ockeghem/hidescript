@@ -1,0 +1,8 @@
+﻿goto _end_foo
+foo:
+return;
+_end_foo:
+call foo ;#_0=##return;
+#x=#_0;
+quit ;
+// compileAndExecute::Done

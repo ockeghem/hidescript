@@ -1,0 +1,5 @@
+﻿#a=5|11;
+insert str(#a)+"\n";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

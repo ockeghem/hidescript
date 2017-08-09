@@ -325,8 +325,10 @@ function nextSym(): void {
                 symKind = symBinaryOp;
                 operator = "&&";
                 nextChar();
-            } else
-                syntaxError("意図しない文字があります");
+            } else {
+                symKind = symBinaryOp;
+                operator = "&";
+            }
             return;
         }
         if (ch == '|') {
@@ -335,8 +337,10 @@ function nextSym(): void {
                 symKind = symBinaryOp;
                 operator = "||";
                 nextChar();
-            } else
-                syntaxError("意図しない文字があります");
+            } else {
+                symKind = symBinaryOp;
+                operator = "|";
+            }
             return;
         }
         if (ch == '~') {
@@ -575,12 +579,14 @@ function genTempVar(type: string): string {
         } else {
             return "0sR$$" + varname;
         }
-    } else {
+    } else if (type == "n") {
         if (currentLevel == 0) {
             return "0nR#" + varname;
         } else {
             return "0nR##" + varname;
         }
+    } else {
+        syntaxError("void型の関数の値は使えません");
     }
 }
 

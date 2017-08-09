@@ -102,15 +102,6 @@ function doIt(file) {
     // 以下、コンパイル結果のチェック
     var ok = true;
     var s_result = "";
-    if (cond['diff'] == "1") {
-        var r = compareMacro(macrofile, changeExt(testRef + "\\" + file, ".mac"));
-        s_result += r;
-        if (r != "o")
-            ok = false;
-    }
-    else {
-        s_result += "-";
-    }
     if (cond['status'] !== null) {
         if (cond['status'] == result['status']) {
             s_result += "o";
@@ -131,6 +122,15 @@ function doIt(file) {
             s_result += "x";
             ok = false;
         }
+    }
+    else {
+        s_result += "-";
+    }
+    if (cond['diff'] == "1") {
+        var r = compareMacro(macrofile, changeExt(testRef + "\\" + file, ".mac"));
+        s_result += r;
+        if (r != "o")
+            ok = false;
     }
     else {
         s_result += "-";
