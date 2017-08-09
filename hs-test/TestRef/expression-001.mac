@@ -6,4 +6,6 @@
 #b=#a%3;
 #b=#a||(!#a);
 #c=---(#a+1);
+insert  "done\n";
+saveexit ;
 // compileAndExecute::Done

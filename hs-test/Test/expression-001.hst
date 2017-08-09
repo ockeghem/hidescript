@@ -11,4 +11,5 @@ b = a % 3;
 b = a || !a;
 var c = ---(a + 1);
 
-quit();
+insert("done\n");
+saveexit();
