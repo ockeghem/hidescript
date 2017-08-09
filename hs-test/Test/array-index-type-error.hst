@@ -1,0 +1,8 @@
+//message=数値型の式が必要です
+//status=1
+//
+var a: number[];
+
+a["xx"] = 1;
+
+quit();
