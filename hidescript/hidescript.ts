@@ -470,7 +470,7 @@ function genTempCode(): void {
         insert(tempCode + "\r\n");
         tempCode = "";
     }
-    nTempVars = 0;  // todo 試験的に実装 .. nTempVars をここでリセット
+    nTempVars = 0;
 }
 
 function genCode(code: string): void {
@@ -545,7 +545,9 @@ function genVar(pos: number): string {
         while (symKind == symLBracket) {
             nextSym();
             var code2 = expression();
-            code = code + "[" + getCodeBody(code2) + "]";       // todo code2が数値であることのチェック
+            if (getCodeType(code2) != "n")
+                syntaxError("数値型の式が必要です");
+            code = code + "[" + getCodeBody(code2) + "]";
             checkSym(symRBracket, "]");
         }
     }
@@ -1034,7 +1036,7 @@ function varStatement() : void {
         typeName = getCodeType(code1);
         var pos = register(varName, typeName, currentLevel);
         var code2 = genVar(pos);
-        genCode(getCodeBody(code2) + "=" + getCodeBody(code1) + ";");       // todo 左辺の型チェックが抜けている
+        genCode(getCodeBody(code2) + "=" + getCodeBody(code1) + ";");
     } else {
         syntaxError('式またはコロンが必要です');
     }
@@ -1051,6 +1053,8 @@ function genLabel(n: number): void {
 function ifStatement(): void {
     checkSym(symLParen, "(");
     var cmpCode = expression();
+    if (getCodeType(cmpCode) != "n")
+        syntaxError("数値型の式が必要です");
     checkSym(symRParen, ")");
     genCode("if ( " + getCodeBody(cmpCode) + ") {");
     var code = statement();
@@ -1071,7 +1075,9 @@ function whileStatement(): void {
     genCode("goto " + getLabel(currentContinueLabel));
 
     checkSym(symLParen, "(");
-    var cmpCode = expression(); // todo: 式の型をチェックしていない…真偽値を得る関数を作ってもいいかも
+    var cmpCode = expression();
+    if (getCodeType(cmpCode) != "n")
+        syntaxError("数値型の式が必要です");
     var tempCode = popTempCode();    checkSym(symRParen, ")");
 
     genLabel(label); // ループの戻り
@@ -1097,7 +1103,9 @@ function doStatement(): void {
     genLabel(label + 1); // continue用ラベル
     checkSym(symWhile, "while");
     checkSym(symLParen, "(");
-    var cmpCode = expression(); // todo: 式の型をチェックしていない…真偽値を得る関数を作ってもいいかも
+    var cmpCode = expression();
+    if (getCodeType(cmpCode) != "n")
+        syntaxError("数値型の式が必要です");
     checkSym(symRParen, ")");
     genCode("if (" + getCodeBody(cmpCode) + ") goto " + getLabel(label));
     genLabel(label + 2); // break用ラベル
@@ -1105,7 +1113,7 @@ function doStatement(): void {
     currentContinueLabel = saveContinueLabel;
 }
 
-function returnStatement(): void { // todo 関数の型と戻り値の型の適合チェックが抜けている
+function returnStatement(): void {
     if (currentFuncType == "")
         syntaxError("関数定義の外でreturnはできません");
     if (symKind == symSemicolon) { // 式なしの return
