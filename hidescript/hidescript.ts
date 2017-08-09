@@ -661,12 +661,23 @@ function factor(): string {
 
 function unaryExpression(): string {
     var ops = "";
-    var logicalNot = 0;
+    var firstPriority = "";
+    var lastPriority = "9";
+    var nParens = 0;
     while (symKind == symAddOp || symKind == symLogicalNot) {
+        var opPriority = "2";
         if (operator == '!')
-            logicalNot = 1;
-        var ops = ops + operator;
+            opPriority = "5";
+        if (opPriority > lastPriority) {
+            ops = ops + "(" + operator;
+            nParens = nParens + 1;
+        } else {
+            ops = ops + operator;
+        }
         nextSym();
+        lastPriority = opPriority;
+        if (firstPriority == "")
+            firstPriority = opPriority;
     }
     var code = factor();
     var priority = wcsmidstr(code, 0, 1);
@@ -679,8 +690,12 @@ function unaryExpression(): string {
         code = ops + "(" + code + ")";
     else
         code = ops + code;
-    if (logicalNot)
-        priority = "5";
+    while (nParens > 0) {
+        code = code + ")";
+        nParens = nParens - 1;
+    }
+    if (firstPriority != "")
+        priority = firstPriority;
     return priority + type1 + LRvalue + code;
 }
 
