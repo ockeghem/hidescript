@@ -1,0 +1,20 @@
+//status=0
+//diff=1
+//exec=1
+//
+var x = -5;
+var z = 0;
+var a = - x + 1;		// a = -(-5) + 1 = 6
+insert(str(a) + "\n");
+
+a = !z + 1;		// a = (!0) + 1 = 1 + 1 = 2
+insert(str(a) + "\n");
+
+a = - ! z + 1;		// a = (-(! 0))) + 1 = (-1) + 1 = 0
+insert(str(a) + "\n");
+
+a = ! - x + 1;		// a = (!(5)) + 1 = 0 + 1 = 1
+insert(str(a) + "\n");
+
+insert("done\n");
+saveexit();

@@ -1,0 +1,13 @@
+﻿#x=-5;
+#z=0;
+#a=-#x+1;
+insert  str( #a)+"\n";
+#a=(!#z)+1;
+insert  str( #a)+"\n";
+#a=-(!#z)+1;
+insert  str( #a)+"\n";
+#a=(!-#x)+1;
+insert  str( #a)+"\n";
+insert  "done\n";
+saveexit ;
+// compileAndExecute::Done

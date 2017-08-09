@@ -1,6 +1,6 @@
 //status=0
 //diff=1
-//exec=1
+//exec=0
 //
 var x = 5;
 var a = -x;
@@ -12,9 +12,9 @@ a = -x * 5;
 a = +x * 5;
 a = !x * 5;
 
-a = --x;
-a = ++x;
-a = !!x;
+a = - -x;
+a = + +x;
+a = ! !x;
 
 a = !-x;
 a = !+x;
