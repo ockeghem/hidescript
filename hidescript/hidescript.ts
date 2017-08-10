@@ -48,6 +48,8 @@ var symLBracket = 44;
 var symRBracket = 45;
 var symEOF = 46;
 
+var escapeChar = "\\";
+
 var keyword: string[] = new Array();
 var symTable: string[] = new Array();
 
@@ -279,11 +281,16 @@ function nextSym(): void {
             var stringLiteral = "";
             nextChar();
             while (ch != terminator) {
+                if (ch == '"' || ch == "'")
+                    stringLiteral = stringLiteral + "\\";
                 stringLiteral = stringLiteral + ch;
+                if (ch == escapeChar) {
+                    nextChar();
+                    stringLiteral = stringLiteral + ch;
+                }
                 nextChar();
                 if (wcslen(ch) == 0) {
-                    symKind = symEOF;
-                    return;
+                    syntaxError("文字列リテラルが閉じられていません");
                 }
             }
             nextChar();
@@ -550,7 +557,7 @@ function genVar(pos: number): string {
             nextSym();
             var code2 = expression();
             if (getCodeType(code2) != "n")
-                syntaxError("数値型の式が必要です");
+                syntaxError("数値型の式が必要です(1)");
             code = code + "[" + getCodeBody(code2) + "]";
             checkSym(symRBracket, "]");
         }
@@ -737,7 +744,7 @@ function unaryExpression(): string {
     var LRvalue = getCodeLR(code);
     code = getCodeBody(code);
     if (ops != "" && type1 != "n")    // ! 以外の単項演算子で数値型のチェックが漏れていた
-        syntaxError("数値型が必要です");
+        syntaxError("数値型が必要です(1)");
     if (ops != "" && priority > "1")
         code = ops + "(" + code + ")";
     else
@@ -782,7 +789,7 @@ function checkBinOpType(op: string, type1: string, type2: string): string {
         etype = "n";
     } else {
         if (type1 != "n" || type2 != "n")
-            syntaxError("数値型が必要です");
+            syntaxError("数値型が必要です(2)");
         etype = "n";
     }
     return etype;
@@ -1060,7 +1067,7 @@ function ifStatement(): void {
     checkSym(symLParen, "(");
     var cmpCode = expression();
     if (getCodeType(cmpCode) != "n")
-        syntaxError("数値型の式が必要です");
+        syntaxError("数値型の式が必要です(2)");
     checkSym(symRParen, ")");
     genCode("if ( " + getCodeBody(cmpCode) + ") {");
     var code = statement();
@@ -1083,7 +1090,7 @@ function whileStatement(): void {
     checkSym(symLParen, "(");
     var cmpCode = expression();
     if (getCodeType(cmpCode) != "n")
-        syntaxError("数値型の式が必要です");
+        syntaxError("数値型の式が必要です(3)");
     var tempCode = popTempCode();    checkSym(symRParen, ")");
 
     genLabel(label); // ループの戻り
@@ -1111,7 +1118,7 @@ function doStatement(): void {
     checkSym(symLParen, "(");
     var cmpCode = expression();
     if (getCodeType(cmpCode) != "n")
-        syntaxError("数値型の式が必要です");
+        syntaxError("数値型の式が必要です(4)");
     checkSym(symRParen, ")");
     genCode("if (" + getCodeBody(cmpCode) + ") goto " + getLabel(label));
     genLabel(label + 2); // break用ラベル
