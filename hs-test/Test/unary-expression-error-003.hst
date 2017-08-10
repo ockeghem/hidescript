@@ -1,10 +1,10 @@
 //status=1
-//message=数値型が必要です
+//message=数値型が必要です(1)
 //diff=0
 //exec=0
 //
 var s = "a";
-var a = -s;
+var a = !s;
 
 insert("done\n");
 saveexit();

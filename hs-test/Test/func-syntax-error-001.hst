@@ -1,0 +1,6 @@
+//message=識別子(2)が必要です
+//status=1
+//
+function (a) { }
+
+quit();

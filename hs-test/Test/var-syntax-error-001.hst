@@ -1,0 +1,6 @@
+//message=型名が必要です(4)
+//status=1
+//
+var a: foo;
+
+quit();

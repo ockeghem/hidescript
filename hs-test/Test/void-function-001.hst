@@ -1,0 +1,12 @@
+//message=
+//status=0
+//diff=1
+//exec=0
+//
+function foo(): void {
+  insertln("ok");
+}
+foo();
+
+insert("done\n");
+saveexit();

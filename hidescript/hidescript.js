@@ -595,7 +595,8 @@ function genTempVar(type) {
         }
     }
     else {
-        syntaxError("void型の関数の値は使えません");
+        // syntaxError("void型の関数の値は使えません");     // todo debug
+        return "0nR#XXX";
     }
 }
 function genParameterCode(paramTypes) {
@@ -846,7 +847,7 @@ expression = function () {
 function parameter(n) {
     var paramName = ident;
     var type = "";
-    checkSym(symIdent, "識別子");
+    checkSym(symIdent, "識別子(1)");
     checkSym(symColon, ":");
     if (symKind == symNumber) {
         type = "n";
@@ -855,7 +856,7 @@ function parameter(n) {
         type = "s";
     }
     else {
-        syntaxError("型名が必要です");
+        syntaxError("型名が必要です(1)");
     }
     register(paramName, type, -n);
     nextSym();
@@ -880,13 +881,14 @@ function statementList(endSym) {
 }
 function defFunction(funcName) {
     var funcPos = 0;
-    var funcType = "fv";
+    var funcType = "fv"; // デフォルトの関数タイプは fv
     var funcTypeFw = "";
     var saveCurrentFuncType = currentFuncType; // currentFuncTypeを保存しておく
+    currentFuncType = "v"; // 関数の戻り値型を指定しない場合のデフォルトはvoidとする
     if (currentLevel != 0)
         syntaxError('関数のネストはできません');
     if (funcName == "") {
-        checkSym(symIdent, "識別子");
+        checkSym(symIdent, "識別子(2)");
         funcName = ident;
         funcPos = register(funcName, funcType, 0);
     }
@@ -896,7 +898,6 @@ function defFunction(funcName) {
     }
     genCode("goto _end_" + funcName);
     genCode(funcName + ":");
-    currentFuncType = "v"; // 関数の戻り値型を指定しない場合のデフォルトはvoidとする
     var saveNIdents = nIdents; // 識別子の個数を保存しておく
     checkSym(symLParen, "(");
     var paramTypes = "";
@@ -918,7 +919,7 @@ function defFunction(funcName) {
             currentFuncType = "s";
         }
         else {
-            syntaxError("型名が必要です");
+            syntaxError("型名が必要です(2)");
         }
         nextSym(); // 型名の読み飛ばし
     }
@@ -1025,13 +1026,13 @@ function checkFunction() {
         funcType = "xs";
     }
     else {
-        syntaxError("型名が必要です");
+        syntaxError("型名が必要です(3)");
     }
     nextSym(); // 型名の読み飛ばし
     return funcType + paramTypes;
 }
 function varStatement() {
-    checkSym(symIdent, "識別子");
+    checkSym(symIdent, "識別子(3)");
     var varName = ident;
     if (symKind == symColon) {
         nextSym();
@@ -1044,7 +1045,7 @@ function varStatement() {
             register(varName, typeName, currentLevel);
         }
         else {
-            syntaxError('型名が必要です');
+            syntaxError('型名が必要です(4)');
         }
     }
     else if (symKind == symAssignment) {

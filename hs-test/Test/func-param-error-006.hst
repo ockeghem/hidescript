@@ -1,0 +1,6 @@
+//message=型名が必要です(1)
+//status=1
+//
+function foo(a:) { }
+
+quit();

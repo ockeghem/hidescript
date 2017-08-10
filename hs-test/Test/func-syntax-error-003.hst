@@ -1,0 +1,8 @@
+//message=型名が必要です(2)
+//status=1
+//
+function foo(a: number) : xxx {
+
+}
+
+quit();
