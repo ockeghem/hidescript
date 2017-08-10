@@ -295,8 +295,6 @@ function bar() {
 // ...
 function foo(x: number): number { ...  }  // 関数fooの定義
 bar();
-
-
 ```
 
 前方参照を避けるためには、以下のようにします。

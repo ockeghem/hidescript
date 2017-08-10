@@ -1,15 +1,4 @@
-/**
- * 残作業
- * 文字列リテラルのエスケープ処理 \ \" \n 等
- * if / while の条件の型判定（整数型であることのチェック）
- * a["xxx"] = 1; が通る。配列の添字は数値のみ
- * 全体的に void 型のチェックが甘い
- * 二項演算子の型のチェックがない
- *
- * 改善項目
- * let / constを実装してもよいのでは? … スコープ / 巻き上げの問題から、varのままとする
- *
- * コメント … 済
+/** 秀スクリプト ... TypeScriptライクなスクリプト言語から秀丸マクロを生成
  */
 var symNew = 0;
 var symVar = 1;
@@ -155,6 +144,7 @@ registerBuiltinFunction("message", "vs");
 registerBuiltinFunction("openfile", "vs");
 registerBuiltinFunction("quit", "v");
 
+registerBuiltinFunction("save", "v");
 registerBuiltinFunction("saveexit", "v");
 registerBuiltinFunction("selectall", "v");
 registerBuiltinFunction("selendx", "n");
@@ -1243,6 +1233,7 @@ if (version() > 0) {
     var t2 = tickcount();
     insert("// t1 : " + str(t1) + "  t2 : " + str(t2) + "  diff = " + str(t2 - t1) + "\n");
     enabledraw();
+    save();
 }
 
 //EOF  これ以降は TypeScript + Node.js のコードが自由に書ける
@@ -1377,4 +1368,7 @@ function enabledraw(): void {
 
 function tickcount(): number {
     return 0;
+} // dummy
+
+function save(): void  {
 } // dummy

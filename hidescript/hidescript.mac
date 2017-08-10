@@ -135,6 +135,7 @@ call registerBuiltinFunction  "macrodir", "s";
 call registerBuiltinFunction  "message", "vs";
 call registerBuiltinFunction  "openfile", "vs";
 call registerBuiltinFunction  "quit", "v";
+call registerBuiltinFunction  "save", "v";
 call registerBuiltinFunction  "saveexit", "v";
 call registerBuiltinFunction  "selectall", "v";
 call registerBuiltinFunction  "selendx", "n";
@@ -1509,5 +1510,6 @@ call compile  $sx;
 #t2=tickcount;
 insert  "// t1 : "+str( #t1)+"  t2 : "+str( #t2)+"  diff = "+str( #t2-#t1)+"\n";
 enabledraw ;
+save ;
 }
 // compileAndExecute::Done
