@@ -1,0 +1,18 @@
+﻿#a=1;
+#b=1;
+#n=3;
+insert str(#a)+"\n";
+insert str(#b)+"\n";
+goto _LL1
+_LL0:
+#c=#a+#b;
+insert str(#c)+"\n";
+#a=#b;
+#b=#c;
+#n=#n+1;
+_LL1:
+if (#n<=10) goto _LL0
+_LL2:
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

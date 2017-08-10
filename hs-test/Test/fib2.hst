@@ -1,0 +1,28 @@
+//status=0
+//diff=1
+//exec=1
+//
+var a = 1;
+var b = 1;
+var n = 3;
+
+insertln(a);
+insertln(b);
+while (n <= 10) {
+  var c = a + b;
+  insertln(c);
+  a = b;
+  b = c;
+  n = n + 1;
+}
+
+insertln("done");
+saveexit();
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}
