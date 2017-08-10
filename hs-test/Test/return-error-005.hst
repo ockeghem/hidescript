@@ -1,0 +1,7 @@
+//message=void型関数なのに値を返そうとしています
+//status=1
+//
+function foo(x: number, s: string) : void {
+  return 1;
+}
+quit();

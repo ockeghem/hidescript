@@ -1,0 +1,5 @@
+﻿$a="\"";
+insert $a+"\n";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

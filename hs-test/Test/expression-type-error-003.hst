@@ -1,0 +1,6 @@
+//message=数値型が必要です(2)
+//status=1
+//
+var x = "x" * 5;
+
+quit();

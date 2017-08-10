@@ -1,0 +1,6 @@
+﻿#x=-1;
+insert str(#x)+"\n";
+insert "aa"+"\n";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

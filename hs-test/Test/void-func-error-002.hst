@@ -1,0 +1,10 @@
+//message=void型の関数の値は使えません
+//status=1
+//
+function foo() : void {
+}
+var x : number;
+x = foo();
+
+
+quit();

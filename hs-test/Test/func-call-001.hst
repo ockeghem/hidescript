@@ -1,0 +1,11 @@
+//status=0
+//diff=1
+//exec=1
+//
+function foo(): void {
+  insertln("ok");
+}
+foo();
+
+insertln("done");
+saveexit();

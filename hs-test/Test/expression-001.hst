@@ -1,0 +1,24 @@
+//status=0
+//diff=1
+//exec=1
+//
+var a = 1;
+var b = -(a + 1);
+b = +(a + 1);
+b = !(a + 1);
+b = !a * 1;
+b = a % 3;
+b = a || !a;
+var c = - - -(b + 1);
+insertln(c);
+
+insertln("done");
+saveexit();
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}

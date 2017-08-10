@@ -1,0 +1,18 @@
+//status=0
+//diff=1
+//exec=1
+//
+var a = "\"";
+
+insertln(a);
+
+insertln("done");
+saveexit();
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}

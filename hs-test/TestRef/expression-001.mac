@@ -1,0 +1,12 @@
+﻿#a=1;
+#b=-(#a+1);
+#b=+(#a+1);
+#b=!(#a+1);
+#b=(!#a)*1;
+#b=#a%3;
+#b=#a||(!#a);
+#c=---(#b+1);
+insert str(#c)+"\n";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

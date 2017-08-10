@@ -1,0 +1,7 @@
+//message=パラメータが多すぎます
+//status=1
+//
+function foo(n : number): number { return 0; }
+
+var x = foo(1, 2);	// パラメータが多すぎます
+quit();

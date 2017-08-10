@@ -1,0 +1,7 @@
+//message=代入を伴わない式です
+//status=1
+//
+var a = 1;
+a;
+
+quit();

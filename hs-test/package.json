@@ -1,0 +1,9 @@
+{
+  "name": "hs-test",
+  "version": "0.0.0",
+  "description": "hs-test",
+  "main": "app.js",
+  "author": {
+    "name": "ms_000"
+  }
+}

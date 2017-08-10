@@ -1,0 +1,7 @@
+//message=関数定義とreturnの型が違います
+//status=1
+//
+function foo(x: number, s: string) : string {
+  return 1;
+}
+quit();

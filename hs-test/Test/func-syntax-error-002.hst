@@ -1,0 +1,11 @@
+//message=関数のネストはできません
+//status=1
+//
+function foo(a: number) {
+
+    function bar(a: number) {
+    }
+
+}
+
+quit();

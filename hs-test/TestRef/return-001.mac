@@ -1,0 +1,7 @@
+﻿goto _end_foo
+foo:
+return 1;
+return 0;
+_end_foo:
+quit ;
+// compileAndExecute::Done

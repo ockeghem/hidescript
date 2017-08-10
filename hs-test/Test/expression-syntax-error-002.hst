@@ -1,0 +1,8 @@
+//message=代入文の左辺には左辺値が必要です
+//status=1
+//
+function foo() : number { }
+
+foo() = 1;
+
+quit();

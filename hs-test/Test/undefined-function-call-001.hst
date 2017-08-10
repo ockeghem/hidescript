@@ -1,0 +1,7 @@
+//message=fooが見つかりません
+//status=1
+//
+foo();
+
+insertln("done");
+quit();

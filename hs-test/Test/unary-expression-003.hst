@@ -1,0 +1,28 @@
+//status=0
+//diff=1
+//exec=1
+//
+var x = 5;
+
+var a = ~x;
+insertln(a);
+
+a = -~x;
+insertln(a);
+
+a = ~(x + 5);
+insertln(a);
+
+a = -~(x + 5);
+insertln(a);
+
+insertln("done");
+saveexit();
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}

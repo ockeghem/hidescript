@@ -1,0 +1,34 @@
+//status=0
+//diff=1
+//exec=1
+//
+var x = -5;
+var z = 0;
+var a = - x + 1;		// a = -(-5) + 1 = 6
+insertln(a);
+
+a = !z + 1;		// a = (!0) + 1 = 1 + 1 = 2
+insertln(a);
+
+a = - ! z + 1;		// a = (-(! 0))) + 1 = (-1) + 1 = 0
+insertln(a);
+
+a = ! - a + 1;		// a = (!(5)) + 1 = 0 + 1 = 1
+insertln(a);
+
+a = -1 ^ x;
+insertln(a);
+
+a = -10 < x;
+insertln(a);
+
+insertln("done");
+saveexit();
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}

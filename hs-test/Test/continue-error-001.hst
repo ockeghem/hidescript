@@ -1,0 +1,7 @@
+//message=continueできません
+//status=1
+//
+continue;
+
+insertln("done");
+quit();

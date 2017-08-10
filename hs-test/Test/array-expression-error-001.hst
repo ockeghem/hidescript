@@ -1,0 +1,8 @@
+//message=[が必要です
+//status=1
+//
+var a : string[];
+a = "x";
+
+insertln("done");
+quit();

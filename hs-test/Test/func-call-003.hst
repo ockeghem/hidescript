@@ -1,0 +1,13 @@
+//status=0
+//diff=1
+//exec=1
+//
+function foo(): number {
+  insertln("ok");
+  return 567;
+}
+var x = foo();
+
+insertln(x);
+insertln("done");
+saveexit();

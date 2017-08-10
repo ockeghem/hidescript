@@ -1,0 +1,7 @@
+//message=文字列と数値の型が異なる代入はできません
+//status=1
+//
+var x: string;
+x = 1;
+
+quit();

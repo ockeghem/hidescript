@@ -1,0 +1,7 @@
+//message=数値型の式が必要です(2)
+//status=1
+//
+var x = "";
+if (x) {}
+
+quit();

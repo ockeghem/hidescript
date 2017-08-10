@@ -1,0 +1,6 @@
+//message=:が必要です
+//status=1
+//
+function foo(a) { }
+
+quit();

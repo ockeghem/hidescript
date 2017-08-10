@@ -1,0 +1,9 @@
+//message=型名が必要です(2)
+//status=1
+//
+var foo: (x: number) => void;
+
+foo = function(x: number): void1 { return 1; }
+
+var x = foo(1);
+quit();

@@ -1,0 +1,7 @@
+﻿#x=5;
+#a=-#x;
+#a=-(!#x);
+#a=!-#x;
+insert  "done\n";
+saveexit ;
+// compileAndExecute::Done
