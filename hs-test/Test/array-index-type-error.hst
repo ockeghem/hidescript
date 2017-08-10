@@ -1,4 +1,4 @@
-//message=数値型の式が必要です
+//message=数値型の式が必要です(1)
 //status=1
 //
 var a: number[];

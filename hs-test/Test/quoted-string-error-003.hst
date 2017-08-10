@@ -1,0 +1,4 @@
+//message=文字列リテラルが閉じられていません
+//status=1
+//
+var x = "xxxxxxxxx\

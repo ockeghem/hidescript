@@ -1,0 +1,8 @@
+//message=識別子か数値が必要です
+//status=1
+//
+var a: number;
+
+a = <;
+
+quit();

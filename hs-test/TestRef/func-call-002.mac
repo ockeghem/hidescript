@@ -1,0 +1,10 @@
+﻿goto _end_foo
+foo:
+insert "ok"+"\n";
+return 0;
+return 0;
+_end_foo:
+call foo ;
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

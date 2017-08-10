@@ -1,0 +1,7 @@
+//message=breakできません
+//status=1
+//
+break;
+
+insertln("done");
+quit();

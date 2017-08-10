@@ -1,0 +1,4 @@
+﻿insert  "foo";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

@@ -1,0 +1,6 @@
+//message=式またはコロンが必要です
+//status=1
+//
+var a; foo;
+
+quit();

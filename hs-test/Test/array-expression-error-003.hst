@@ -1,0 +1,7 @@
+//message=Arrayが必要です
+//status=1
+//
+var a : string[] = new array();
+
+insertln("done");
+quit();

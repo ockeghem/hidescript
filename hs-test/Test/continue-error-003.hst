@@ -1,0 +1,9 @@
+//message=continueできません
+//status=1
+//
+while (0) {
+}
+continue;
+
+insertln("done");
+quit();

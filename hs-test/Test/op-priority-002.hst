@@ -1,0 +1,29 @@
+//status=0
+//diff=1
+//exec=1
+//
+var a = -5;
+var b = 3;
+var c = 5;
+var d = 9;
+var x = 0;
+
+x = a + b > c + d;
+x = a == b > c == d;
+x = a > b == c > d;
+x = a + b & c + d;
+x = a + b ^ c + d;
+x = a + b | c + d;
+x = a + b && c + d;
+x = a + b || c + d;
+
+insertln("done");
+saveexit();
+
+//EOF
+function saveexit() { }
+function insertln(s) {
+  if (typeof s === "boolean")
+    s = Number(s);
+  console.log(s);
+}
