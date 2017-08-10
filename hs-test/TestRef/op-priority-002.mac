@@ -1,0 +1,16 @@
+﻿#a=-5;
+#b=3;
+#c=5;
+#d=9;
+#x=0;
+#x=#a+#b>#c+#d;
+#x=#a==(#b>#c==#d);
+#x=#a>#b==(#c>#d);
+#x=(#a+#b)&(#c+#d);
+#x=(#a+#b)^(#c+#d);
+#x=(#a+#b)|(#c+#d);
+#x=#a+#b&&#c+#d;
+#x=#a+#b||#c+#d;
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

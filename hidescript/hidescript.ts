@@ -486,15 +486,17 @@ function genTempCode(): void {
 
 function genCode(code: string): void {
     genTempCode();
-    insert(code + "\r\n");
+    if (code != "")
+        insert(code + "\r\n");
 }
 
 function genReturnVar(type: string): string {
-    if (type == "s") {
+    if (type == "s")
         return "$$return";
-    } else {
+    else if (type == "n")
         return "##return";
-    }
+    else
+        syntaxError("数値型または文字型の式が必要です（コンパイラのバグ）");
 }
 
 function pushTempCode(code: string): void {
@@ -593,8 +595,7 @@ function genTempVar(type: string): string {
             return "0nR##" + varname;
         }
     } else {
-        // syntaxError("void型の関数の値は使えません");     // todo debug
-        return "0nR#XXX";
+        syntaxError("あり得ない一時変数の型（コンパイラのバグ）");
     }
 }
 
@@ -609,7 +610,7 @@ function genParameterCode(paramTypes: string): string {
             var codeType = getCodeType(codeParam); // パラメータコードの型を取り出し
             if (tolower(paramType) != codeType)
                 syntaxError("パラメータの型が違います");
-            paramCode = paramCode + " " + getCodeBody(codeParam);        // todo 型のチェック
+            paramCode = paramCode + " " + getCodeBody(codeParam);
             paramTypes = wcsmidstr(paramTypes, 1);
             if (symKind != symComma)
                 break;
@@ -622,18 +623,22 @@ function genParameterCode(paramTypes: string): string {
     return paramCode;
 }
 
-function functionCall(pos: number, type: string): string {
-    if (type == "x" && symKind != symLParen)
-        return genVar(pos);     // todo これが何のためにあるか忘れたので要確認
+function functionCall(pos: number, type: string, mode: number): string {    // mode == 1 は、右辺値であることを示す
     var funcType = wcsmidstr(identsType[pos], 1, 1);
     var code = "call " + identsName[pos] + " ";
     checkSym(symLParen, '(');
     code = code + genParameterCode(wcsmidstr(identsType[pos], 2));
     checkSym(symRParen, ')');
     pushTempCode(code + ";");
-    var tempVar = genTempVar(funcType);
-    pushTempCode(getCodeBody(tempVar) + "=" + genReturnVar(funcType) + ";");
-    return tempVar;
+    if (mode) {
+        if (funcType == "v")
+            syntaxError("void型の関数の値は使えません");
+        var tempVar = genTempVar(funcType);
+        pushTempCode(getCodeBody(tempVar) + "=" + genReturnVar(funcType) + ";");
+        return tempVar;
+    } else {
+        return "0vR";   // 値を受け取らない関数呼び出し
+    }
 }
 
 function builtinPrintln(): string {
@@ -643,29 +648,28 @@ function builtinPrintln(): string {
     var type1 = getCodeType(code);
     if (type1 == "n") {
         return "0vRinsert str(" + getCodeBody(code) + ')+\"\\n\"';
-
     } else if (type1 == "s") {
         return "0vRinsert " + getCodeBody(code) + '+\"\\n\"';
     } else {
-        syntaxError("builtinPrintlnで予期しない型");
+        syntaxError("builtinPrintlnで予期しない型（コンパイラのバグ?）");
     }
 }
 
 function builtinFunction(pos: number): string {
-    var funcType = wcsmidstr(identsType[pos], 1, 1);
-    var code: string;
     var funcName = identsName[pos];
     if (funcName == "insertln")
         return builtinPrintln();
     if (wcsleftstr(funcName, 1) == "_") {
         funcName = wcsmidstr(funcName, 1);
     }
+    var code: string;
+    var funcType = wcsmidstr(identsType[pos], 1, 1);
     if (funcType == "v")     // 組み込み関数ではなく、秀丸マクロの「文」
         code = funcName + " ";
     else if (wcslen(identsType[pos]) == 2)  // 引数のない関数 = 秀丸マクロの「内部的な値を表現するキーワード 」
         code = funcName;
     else
-        code = identsName[pos] + "(";   // 通常の組み込み関数関数
+        code = funcName + "(";   // 通常の組み込み関数関数
     checkSym(symLParen, '(');
     code = code + genParameterCode(wcsmidstr(identsType[pos], 2));
     if (funcType != "v" && wcslen(identsType[pos]) != 2)
@@ -674,17 +678,17 @@ function builtinFunction(pos: number): string {
     return "0" + funcType + "R" + code;
 }
 
-function variableOrFunctionCall(): string {
+function variableOrFunctionCall(mode: number): string {
     var pos = searchIdent(ident);
     if (pos < 0) {
         syntaxError(ident + "が見つかりません");
     }
     nextSym();
     var type = wcsmidstr(identsType[pos], 0, 1);
-    if (type == "s" || type == "S" || type == "n" || type == "N") {
+    if (type == "s" || type == "S" || type == "n" || type == "N" || (type == "x" && symKind != symLParen)) {
         return genVar(pos);
     } else if (type == "f" || type == "x") {
-        return functionCall(pos, type);
+        return functionCall(pos, type, mode);
     } else if (type == "F") {   // 秀丸組み込み関数
         return builtinFunction(pos);
     } else {
@@ -692,16 +696,15 @@ function variableOrFunctionCall(): string {
     }
 }
 
-function factor(): string {
+function factor(mode: number): string {
     if (symKind == symLParen) { 
         nextSym();
         var code = expression();
         var priority = getCodePriority(code);
         checkSym(symRParen, ")");
-
         return getCodePriority(code) + getCodeType(code) + "R" + getCodeBody(code);
     } else if (symKind == symIdent) {
-        return variableOrFunctionCall();
+        return variableOrFunctionCall(mode);
     } else if (symKind == symDigit) {
         var dValue = digitValue;
         nextSym();
@@ -739,7 +742,7 @@ function unaryExpression(): string {
         if (firstPriority == "")
             firstPriority = opPriority;
     }
-    var code = factor();
+    var code = factor(1);       // factor(1) は右辺値であることを示す
     var priority = getCodePriority(code);
     var type1 = getCodeType(code);
     var LRvalue = getCodeLR(code);
@@ -947,7 +950,7 @@ function defFunction(funcName: string): void {
 }
 
 function assignmentExpression(): void {
-    var code = factor();
+    var code = factor(0);   // factor(0)は左辺値か、単純な関数呼び出しであることを示す
     var type1 = getCodeType(code);
     var LRvalue = getCodeLR(code);
     code = getCodeBody(code);
@@ -966,12 +969,12 @@ function assignmentExpression(): void {
             code = code + "=" + getCodeBody(code2);
             genCode(code + ";");
         }
-    } else {
-        // ここは単なる関数呼び出しの場合なので、関数呼び出しは tempとして出力されている。戻り値の値は生成する必要はない
-        // ↑ この想定は間違いだった。戻り値のない関数呼び出しは違う?
-        if (type1 != "v")
-            code = "";
-        else
+    } else {    // 以下は単純な関数呼び出し
+        if (LRvalue == "L")
+            syntaxError("代入を伴わない式です");
+        else if (type1 != "v")
+            syntaxError("秀丸の組み込み関数やキーワードをサブルーチンとして呼び出すことはできません");
+        else if (code != "")
             code = code + ";";
         genCode(code);
     }
@@ -979,24 +982,28 @@ function assignmentExpression(): void {
 
 function checkType(): string {
     var typeName: string;
-    if (symKind == symNumber) {
+    if (symKind == symNumber)
         typeName = "n";
-    } else {
+    else if (symKind == symString)
         typeName = "s";
-    }
+    else
+        syntaxError("呼び出し側でチェックしているのでこれはあり得ない(1)");
     nextSym();
     if (symKind == symLBracket) {
         nextSym();
-        if (typeName == "n") {
+        if (typeName == "n")
             typeName = "NL";
-        } else {
+        else if (typeName == "s")
             typeName = "SL";
-        }
+        else
+            syntaxError("呼び出し側でチェックしているのでこれはあり得ない(2)");        
         checkSym(symRBracket, "]");
         if (symKind == symAssignment) {
             nextSym();
             checkSym(symNew, "new")
-            checkSym(symIdent, "Array");    // todo "Array" という識別子であることのチェックが漏れている
+            checkSym(symIdent, "Array");
+            if (ident != "Array")
+                syntaxError("Arrayが必要です");
             checkSym(symLParen, "(");
             checkSym(symRParen, ")");
         }
@@ -1071,11 +1078,11 @@ function ifStatement(): void {
         syntaxError("数値型の式が必要です(2)");
     checkSym(symRParen, ")");
     genCode("if ( " + getCodeBody(cmpCode) + ") {");
-    var code = statement();
+    statement();
     if (symKind == symElse) {
         nextSym();
         genCode("} else {");
-        code = statement();
+        statement();
     }
     genCode("}");
 }
@@ -1264,6 +1271,7 @@ try {
     fs.writeFileSync(outfile, String.fromCharCode(0xFEFF) + out, 'utf8');
 } catch (err) {
     message(err.message);
+    process.exit(1);
 }
 process.exit(0);
 
