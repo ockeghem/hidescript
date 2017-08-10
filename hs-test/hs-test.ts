@@ -94,6 +94,9 @@ function compareMacro(file1: string, file2: string): string {
     }
 }
 
+let ok_count = 0;
+let ng_count = 0;
+
 function doIt(file : string): void {
     const path = testDir + "\\" + file;
     const cond = getTestConditions(path);
@@ -107,6 +110,7 @@ function doIt(file : string): void {
             throw err;
     }
     const result = testScript(path);    // コンパイル実行
+    let message = head(result['stdout']);
 
     // 以下、コンパイル結果のチェック
     let ok = true;
@@ -122,7 +126,7 @@ function doIt(file : string): void {
         s_result += "-";
     }
     if (cond['message'] !== null) {
-        if (cond['message'] == head(result['stdout'])) {
+        if (cond['message'] === message) {
             s_result += "o";
         } else {
             s_result += "x";
@@ -141,6 +145,7 @@ function doIt(file : string): void {
     }
 
     if (result.status == 0) {  // コンパイルが成功したら実行してみる
+        message = ""; // メッセージは削除しておく
         try {
             fs.unlinkSync(outfile);  // 実行結果のファイルを先に削除しておく
         } catch (err) {
@@ -163,13 +168,30 @@ function doIt(file : string): void {
     } else {
         s_result += "-";
     }
+    if (ok) {
+        s_ok = "OK";
+        ok_count++;
+    } else {
+        s_ok = "NG";
+        ng_count++;
+    }
     var s_ok = ok ? "OK" : "NG";
-    console.log(file + "\t" + s_ok + "\t" + s_result);
+    console.log(file + "\t" + s_ok + "\t" + s_result + "\t" + message);
 }
 
-var files = fs.readdirSync(testDir);
-files.filter(function (file) {
-    return /\.hst$/.test(file);
-}).forEach(doIt);
+var argv = process.argv;
+if (argv.length >= 3) {
+    for (var n = 2; n < argv.length; n++) {
+        doIt(argv[n]);
+    }
+} else {
+    var files = fs.readdirSync(testDir);
+    files.filter(function (file) {
+        return /\.hst$/.test(file);
+    }).forEach(doIt);
+}
+
+console.log("OK count = " + ok_count);
+console.log("NG count = " + ng_count);
 
 process.exit(0);
