@@ -737,7 +737,7 @@ function unaryExpression(): string {
     var type1 = getCodeType(code);
     var LRvalue = getCodeLR(code);
     code = getCodeBody(code);
-    if (ops != "" && type1 != "n")    // ! 以外の単項演算子で数値型のチェックが漏れていた
+    if (ops != "" && type1 != "n")
         syntaxError("数値型が必要です(1)");
     if (ops != "" && priority > "1")
         code = ops + "(" + code + ")";
@@ -810,36 +810,36 @@ function genBianryOp(code1: string, op: string, code2: string): string {
 
 expression = function (): string {
     var code = unaryExpression();
-    var stack: string[] = new Array();
-    var sp = 0;
+    var stack: string[] = new Array();  // 演算子順位法のスタック
+    var sp = 0;                         // 同スタックポインタ
 
     stack[sp] = code; sp = sp + 1; // push
 
     while (symKind == symBinaryOp || symKind == symAddOp) {
         var op = operator;
         nextSym();
-        if (sp >= 3) {
+        if (sp >= 3) {  // スタックに3個以上の項目があれば、演算子順位の比較とreduce処理
             var op1 = stack[sp - 2];
             var op1pri = getOpPriority(op1);
             var op2pri = getOpPriority(op);
             if (op1pri <= op2pri) {  // reduce
-                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1])
+                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1]); // 演算結果をスタックに
                 sp = sp - 2;
             }
         }
-        stack[sp] = op; sp = sp + 1; // push(op);
+        stack[sp] = op; sp = sp + 1; // push(op); … shift処理
         var code2 = unaryExpression();
         stack[sp] = code2; sp = sp + 1; // push(code2);
     }
     var n = 0;
-    while (sp >= 3) {
+    while (sp >= 3) {   // スタックの残りをreduce処理していく
         stack[sp - 3] = genBianryOp(stack[sp - 3], stack[sp - 2], stack[sp - 1]);
         sp = sp - 2;
     }
     return stack[0];
 };
 
-function parameter(n: number): string {
+function parameter(n: number, needRegister: number): string {
     var paramName = ident;
     var type = "";
     checkSym(symIdent, "識別子(1)");
@@ -851,16 +851,17 @@ function parameter(n: number): string {
     } else {
         syntaxError("型名が必要です(1)");
     }
-    register(paramName, type, -n);
+    if (needRegister)
+        register(paramName, type, -n);
     nextSym();
     return type;
 }
 
-function parameterList(): string {
+function parameterList(needRegister: number): string {
     var n = 1;
     var paramTypes = "";
     while (1) {
-        paramTypes = paramTypes + parameter(n);
+        paramTypes = paramTypes + parameter(n, needRegister);
         if (symKind != symComma)
             break;
         nextSym();
@@ -898,7 +899,7 @@ function defFunction(funcName: string): void {
     checkSym(symLParen, "(");
     var paramTypes = "";
     if (symKind == symIdent) {
-        paramTypes = parameterList();
+        paramTypes = parameterList(1);  // パラメータ1は、引数を識別子表に登録する指示
     }
     checkSym(symRParen, ")");
     if (symKind == symColon) {
@@ -1006,8 +1007,8 @@ function checkType(): string {
 function checkFunction(): string {
     var paramTypes = "";
     nextSym(); // ( の読み飛ばし
-    if (symKind == symIdent) {
-        paramTypes = parameterList();
+    if (symKind == symIdent) {  // 識別子があることをもって引数があるという判定にしているが、「シンボルが閉じ括弧でない」という条件の方がよいか
+        paramTypes = parameterList(0);   // 引数 0 は識別子表にパラメータを登録しないという意味
     }
     checkSym(symRParen, ")");
     checkSym(symLambdaOp, "=>");

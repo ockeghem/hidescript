@@ -1,0 +1,14 @@
+//message=xが見つかりません
+//status=1
+//
+var foo: (x: number) => void;
+
+x = 1;
+
+foo = function(s: number): void {
+}
+
+foo(1);
+
+insertln("done");
+quit();

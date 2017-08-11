@@ -3,7 +3,7 @@
 //
 var foo: (x: number) => void1;
 
-//foo = function(x: number): number { return 1; }
+foo = function(x: number): number { return 1; }
 
 var x = foo(1);
 quit();

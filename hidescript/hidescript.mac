@@ -1027,7 +1027,9 @@ $$type="s";
 call syntaxError  "型名が必要です(1)";
 }
 }
+if ( ##2) {
 call register  $$paramName, $$type, -##1;
+}
 call nextSym ;
 return $$type;
 return "";
@@ -1038,7 +1040,7 @@ parameterList:
 $$paramTypes="";
 goto _LL55
 _LL54:
-call parameter  ##n;$$_0=$$return;
+call parameter  ##n, ##1;$$_0=$$return;
 $$paramTypes=$$paramTypes+$$_0;
 if ( #symKind!=#symComma) {
 goto _LL56
@@ -1087,7 +1089,7 @@ call genCode  $$1+":";
 call checkSym  #symLParen, "(";
 $$paramTypes="";
 if ( #symKind==#symIdent) {
-call parameterList ;$$_0=$$return;
+call parameterList  1;$$_0=$$return;
 $$paramTypes=$$_0;
 }
 call checkSym  #symRParen, ")";
@@ -1227,7 +1229,7 @@ checkFunction:
 $$paramTypes="";
 call nextSym ;
 if ( #symKind==#symIdent) {
-call parameterList ;$$_0=$$return;
+call parameterList  0;$$_0=$$return;
 $$paramTypes=$$_0;
 }
 call checkSym  #symRParen, ")";

@@ -810,8 +810,8 @@ function genBianryOp(code1, op, code2) {
 }
 expression = function () {
     var code = unaryExpression();
-    var stack = new Array();
-    var sp = 0;
+    var stack = new Array(); // 演算子順位法のスタック
+    var sp = 0; // 同スタックポインタ
     stack[sp] = code;
     sp = sp + 1; // push
     while (symKind == symBinaryOp || symKind == symAddOp) {
@@ -822,12 +822,12 @@ expression = function () {
             var op1pri = getOpPriority(op1);
             var op2pri = getOpPriority(op);
             if (op1pri <= op2pri) {
-                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1]);
+                stack[sp - 3] = genBianryOp(stack[sp - 3], op1, stack[sp - 1]); // 演算結果をスタックに
                 sp = sp - 2;
             }
         }
         stack[sp] = op;
-        sp = sp + 1; // push(op);
+        sp = sp + 1; // push(op); … shift処理
         var code2 = unaryExpression();
         stack[sp] = code2;
         sp = sp + 1; // push(code2);
@@ -839,7 +839,7 @@ expression = function () {
     }
     return stack[0];
 };
-function parameter(n) {
+function parameter(n, needRegister) {
     var paramName = ident;
     var type = "";
     checkSym(symIdent, "識別子(1)");
@@ -853,15 +853,16 @@ function parameter(n) {
     else {
         syntaxError("型名が必要です(1)");
     }
-    register(paramName, type, -n);
+    if (needRegister)
+        register(paramName, type, -n);
     nextSym();
     return type;
 }
-function parameterList() {
+function parameterList(needRegister) {
     var n = 1;
     var paramTypes = "";
     while (1) {
-        paramTypes = paramTypes + parameter(n);
+        paramTypes = paramTypes + parameter(n, needRegister);
         if (symKind != symComma)
             break;
         nextSym();
@@ -897,7 +898,7 @@ function defFunction(funcName) {
     checkSym(symLParen, "(");
     var paramTypes = "";
     if (symKind == symIdent) {
-        paramTypes = parameterList();
+        paramTypes = parameterList(1); // パラメータ1は、引数を識別子表に登録する指示
     }
     checkSym(symRParen, ")");
     if (symKind == symColon) {
@@ -1008,7 +1009,7 @@ function checkFunction() {
     var paramTypes = "";
     nextSym(); // ( の読み飛ばし
     if (symKind == symIdent) {
-        paramTypes = parameterList();
+        paramTypes = parameterList(0); // 引数 0 は識別子表にパラメータを登録しないという意味
     }
     checkSym(symRParen, ")");
     checkSym(symLambdaOp, "=>");
