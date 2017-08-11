@@ -106,8 +106,54 @@ $ch="";
 #currentLevel=0;
 #nIdents=0;
 $currentFuncType="";
+goto _end_syntaxError
+syntaxError:
+message  $$1;
+message  wcsmidstr( $srcText, 0, 100);
+#symKind=#symEOF;
+endmacro ;
+return;
+_end_syntaxError:
+goto _end_searchIdent
+searchIdent:
+##i=#nIdents-1;
+goto _LL1
+_LL0:
+if ( $identsName[##i]==$$1) {
+return ##i;
+}
+##i=##i-1;
+_LL1:
+if (##i>=0) goto _LL0
+_LL2:
+return -1;
+return 0;
+_end_searchIdent:
+goto _end_duplicateCheck
+duplicateCheck:
+call searchIdent  $$1;##_0=##return;
+##pos=##_0;
+if ( ##pos<0) {
+return 1;
+}
+if ( #identsLevel[##pos]==##2) {
+return 0;
+}
+if ( #identsLevel[##pos]==0) {
+return 1;
+}
+if ( ##2==0) {
+return 1;
+}
+return 0;
+return 0;
+_end_duplicateCheck:
 goto _end_register
 register:
+call duplicateCheck  $$1, ##3;##_0=##return;
+if ( !##_0) {
+call syntaxError  "識別子 "+$$1+" が重複して宣言されています";
+}
 $identsName[#nIdents]=$$1;
 $identsType[#nIdents]=$$2;
 #identsLevel[#nIdents]=##3;
@@ -152,14 +198,6 @@ call registerBuiltinFunction  "wcsleftstr", "ssn";
 call registerBuiltinFunction  "wcslen", "ns";
 call registerBuiltinFunction  "wcsmidstr", "ssnN";
 call registerBuiltinFunction  "wcsstrrstr", "nss";
-goto _end_syntaxError
-syntaxError:
-message  $$1;
-message  wcsmidstr( $srcText, 0, 100);
-#symKind=#symEOF;
-endmacro ;
-return;
-_end_syntaxError:
 goto _end_isAlpha
 isAlpha:
 return ($$1>="A"&&$$1<="Z")||($$1>="a"&&$$1<="z");
@@ -185,15 +223,15 @@ _end_nextChar:
 goto _end_nextSym
 nextSym:
 ##oldSym=#symKind;
-goto _LL1
-_LL0:
 goto _LL4
 _LL3:
+goto _LL7
+_LL6:
 call nextChar ;$$_0=$$return;
 $ch=$$_0;
-_LL4:
-if ($ch==" "||($ch=="\t"||($ch=="\r"||$ch=="\n"))) goto _LL3
-_LL5:
+_LL7:
+if ($ch==" "||($ch=="\t"||($ch=="\r"||$ch=="\n"))) goto _LL6
+_LL8:
 if ( $ch=="") {
 #symKind=#symEOF;
 return;
@@ -202,7 +240,7 @@ if ( $ch=="/") {
 call nextChar ;
 if ( $ch=="/") {
 $$term="";
-_LL6:
+_LL9:
 call nextChar ;$$_0=$$return;
 $ch=$$_0;
 $$term=$$term+$ch;
@@ -210,15 +248,15 @@ if ( $$term=="EOF") {
 #symKind=#symEOF;
 return;
 }
-_LL7:
-if ($ch!="\n"&&$ch!="") goto _LL6
-_LL8:
-goto _LL1
+_LL10:
+if ($ch!="\n"&&$ch!="") goto _LL9
+_LL11:
+goto _LL4
 } else {
 if ( $ch=="*") {
 call nextChar ;
-goto _LL10
-_LL9:
+goto _LL13
+_LL12:
 if ( $ch=="") {
 call syntaxError  "コメントが閉じられないままEOFに達しました";
 return;
@@ -227,16 +265,16 @@ if ( $ch=="*") {
 call nextChar ;
 if ( $ch=="/") {
 call nextChar ;
-goto _LL11
+goto _LL14
 }
 } else {
 call nextChar ;
 }
 }
-_LL10:
-if (1) goto _LL9
-_LL11:
-goto _LL1
+_LL13:
+if (1) goto _LL12
+_LL14:
+goto _LL4
 } else {
 #symKind=#symBinaryOp;
 $operator="/";
@@ -247,16 +285,16 @@ return;
 call isAlpha  $ch;##_0=##return;
 if ( ##_0||$ch=="_") {
 $$s="";
-_LL12:
+_LL15:
 $$s=$$s+$ch;
 call nextChar ;
-_LL13:
+_LL16:
 call isAlnum  $ch;##_0=##return;
-if (##_0||$ch=="_") goto _LL12
-_LL14:
+if (##_0||$ch=="_") goto _LL15
+_LL17:
 ##i=#keywordStart;
-goto _LL16
-_LL15:
+goto _LL19
+_LL18:
 if ( $keyword[##i]==$$s) {
 #symKind=##i;
 if ( #symKind==#symBoolean) {
@@ -265,9 +303,9 @@ if ( #symKind==#symBoolean) {
 return;
 }
 ##i=##i+1;
-_LL16:
-if (##i<=#keywordEnd) goto _LL15
-_LL17:
+_LL19:
+if (##i<=#keywordEnd) goto _LL18
+_LL20:
 $ident=$$s;
 #symKind=#symIdent;
 return;
@@ -275,13 +313,13 @@ return;
 call isDigit  $ch;##_0=##return;
 if ( ##_0) {
 $$digit="";
-_LL18:
+_LL21:
 $$digit=$$digit+$ch;
 call nextChar ;
-_LL19:
+_LL22:
 call isDigit  $ch;##_0=##return;
-if (##_0) goto _LL18
-_LL20:
+if (##_0) goto _LL21
+_LL23:
 #digitValue=val( $$digit);
 #symKind=#symDigit;
 return;
@@ -290,8 +328,8 @@ if ( $ch=="\""||$ch=="\'") {
 $$terminator=$ch;
 $$stringLiteral="";
 call nextChar ;
-goto _LL22
-_LL21:
+goto _LL25
+_LL24:
 if ( $ch=="\""||$ch=="\'") {
 $$stringLiteral=$$stringLiteral+"\\";
 }
@@ -304,9 +342,9 @@ call nextChar ;
 if ( wcslen( $ch)==0) {
 call syntaxError  "文字列リテラルが閉じられていません";
 }
-_LL22:
-if ($ch!=$$terminator) goto _LL21
-_LL23:
+_LL25:
+if ($ch!=$$terminator) goto _LL24
+_LL26:
 call nextChar ;
 $stringValue=$$stringLiteral;
 #symKind=#symStringLiteral;
@@ -454,9 +492,9 @@ return;
 }
 call syntaxError  "意図しない文字があります";
 return;
-_LL1:
-if (1) goto _LL0
-_LL2:
+_LL4:
+if (1) goto _LL3
+_LL5:
 return;
 _end_nextSym:
 goto _end_initCompiler
@@ -475,21 +513,6 @@ return;
 call syntaxError  $$2+"が必要です";
 return;
 _end_checkSym:
-goto _end_searchIdent
-searchIdent:
-##i=#nIdents-1;
-goto _LL25
-_LL24:
-if ( $identsName[##i]==$$1) {
-return ##i;
-}
-##i=##i-1;
-_LL25:
-if (##i>=0) goto _LL24
-_LL26:
-return -1;
-return 0;
-_end_searchIdent:
 goto _end_dumpIdents
 dumpIdents:
 insert  "// --------------------\n";
@@ -799,8 +822,6 @@ if ( #symKind==#symLParen) {
 call nextSym ;
 call expression ;$$_0=$$return;
 $$code=$$_0;
-call getCodePriority  $$code;$$_0=$$return;
-$$priority=$$_0;
 call checkSym  #symRParen, ")";
 call getCodePriority  $$code;$$_0=$$return;call getCodeType  $$code;$$_1=$$return;call getCodeBody  $$code;$$_2=$$return;
 return $$_0+$$_1+"R"+$$_2;
@@ -834,25 +855,25 @@ $$lastPriority="9";
 ##nParens=0;
 goto _LL37
 _LL36:
-$$opPriority="2";
+$$uopPriority="2";
 if ( $operator=="!") {
-$$opPriority="5";
+$$uopPriority="5";
 } else {
 if ( $operator=="~") {
 $operator="(-1) ^ ";
-$$opPriority="5";
+$$uopPriority="5";
 }
 }
-if ( $$opPriority>$$lastPriority) {
+if ( $$uopPriority>$$lastPriority) {
 $$ops=$$ops+"("+$operator;
 ##nParens=##nParens+1;
 } else {
 $$ops=$$ops+$operator;
 }
 call nextSym ;
-$$lastPriority=$$opPriority;
+$$lastPriority=$$uopPriority;
 if ( $$firstPriority=="") {
-$$firstPriority=$$opPriority;
+$$firstPriority=$$uopPriority;
 }
 _LL37:
 if (#symKind==#symAddOp||#symKind==#symUnaryOp) goto _LL36
@@ -944,7 +965,7 @@ _end_checkBinOpType:
 goto _end_genBianryOp
 genBianryOp:
 call getHidePriority  $$2;$$_0=$$return;
-$$opPriority=$$_0;
+$$bopPriority=$$_0;
 call getCodePriority  $$1;$$_0=$$return;
 $$priority1=$$_0;
 call getCodeType  $$1;$$_0=$$return;
@@ -959,13 +980,13 @@ call getCodeBody  $$3;$$_0=$$return;
 $$3=$$_0;
 call checkBinOpType  $$2, $$type1, $$type2;$$_0=$$return;
 $$etype=$$_0;
-if ( $$priority1>$$opPriority||($$priority1=="4"&&$$opPriority=="4")) {
+if ( $$priority1>$$bopPriority||($$priority1=="4"&&$$bopPriority=="4")) {
 $$1="("+$$1+")";
 }
-if ( $$priority2>=$$opPriority) {
+if ( $$priority2>=$$bopPriority) {
 $$3="("+$$3+")";
 }
-return $$opPriority+$$etype+"R"+$$1+$$2+$$3;
+return $$bopPriority+$$etype+"R"+$$1+$$2+$$3;
 return "";
 _end_genBianryOp:
 goto _end_expression
@@ -1335,12 +1356,12 @@ if ( $$_0!="n") {
 call syntaxError  "数値型の式が必要です(3)";
 }
 call popTempCode ;$$_0=$$return;
-$$tempCode=$$_0;
+$$tempCode1=$$_0;
 call checkSym  #symRParen, ")";
 call genLabel  ##label;
 call statement ;
 call genLabel  ##label+1;
-call pushTempCode  $$tempCode;
+call pushTempCode  $$tempCode1;
 call getCodeBody  $$cmpCode;$$_0=$$return;call getLabel  ##label;$$_1=$$return;call genCode  "if ("+$$_0+") goto "+$$_1;
 call genLabel  ##label+2;
 #currentBreakLabel=##saveBreakLabel;
@@ -1505,7 +1526,6 @@ selectall ;
 insert  "コンパイル中…しばらくお待ち下さい";
 selectall ;
 disabledraw ;
-selectall ;
 delete ;
 #t1=tickcount;
 call compile  $sx;

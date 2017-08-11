@@ -109,11 +109,43 @@ var identsLevel: number[] = new Array();
 var nIdents = 0;
 var currentFuncType = "";    // 現在の関数の型 s n v のいずれか
 
-/* 
+function syntaxError(msg: string) {
+    message(msg);
+    message(wcsmidstr(srcText, 0, 100));
+    symKind = symEOF;
+    endmacro();
+}
+
+function searchIdent(varName: string): number {
+    var i = nIdents - 1;
+    while (i >= 0) {
+        if (identsName[i] == varName)
+            return i;
+        i = i - 1;
+    }
+    return -1;
+}
+
+function duplicateCheck(varName: string, level: number): number {
+    var pos = searchIdent(varName);
+    if (pos < 0)
+        return 1;
+    if (identsLevel[pos] == level)  // レベルが一致していれば無条件に NG
+        return 0;
+    if (identsLevel[pos] == 0)      // レベルが違い、片方がグローバルなら OK
+        return 1;
+    if (level == 0)                 // レベルが違い、片方がグローバルなら OK
+        return 1;
+    return 0;  //値が重複していて、レベルが 引数とローカルの場合は NG
+}
+
+/*
  * typeName : n .. number  s .. string   f .. function
  *
  */
 function register(varName: string, typeName: string, level: number): number {
+    if (!duplicateCheck(varName, level))
+        syntaxError("識別子 " + varName + " が重複して宣言されています");
     identsName[nIdents] = varName;
     identsType[nIdents] = typeName;
     identsLevel[nIdents] = level;
@@ -164,24 +196,17 @@ registerBuiltinFunction("wcsmidstr", "ssnN");
 registerBuiltinFunction("wcsstrrstr", "nss");
 
 
-function syntaxError(msg: string) {
-    message(msg);
-    message(wcsmidstr(srcText, 0, 100));
-    symKind = symEOF;
-    endmacro();
+
+function isAlpha(chx: string): boolean {
+	return (chx >= "A" && chx <= "Z") || (chx >= "a" && chx <= "z");
 }
 
-
-function isAlpha(ch: string): boolean {
-	return (ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z");
+function isAlnum(chx: string): boolean {
+    return (chx >= "A" && chx <= "Z") || (chx >= "a" && chx <= "z") || (chx >= "0" && chx <= "9");
 }
 
-function isAlnum(ch: string): boolean {
-    return (ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9");
-}
-
-function isDigit(ch: string): boolean {
-	return (ch >= "0" && ch <= "9");	
+function isDigit(chx: string): boolean {
+	return (chx >= "0" && chx <= "9");	
 }
 
 function nextChar(): string {       // 次の一文字を取得
@@ -440,16 +465,6 @@ function checkSym(sym: number, symStr: string) {
     syntaxError(symStr + 'が必要です');
 }
 
-function searchIdent(varName: string): number {
-    var i = nIdents - 1;
-    while (i >= 0) {
-        if (identsName[i] == varName)
-            return i;
-        i = i - 1;
-    }
-    return -1;
-}
-
 function dumpIdents(): void {
     insert("// --------------------\n");
     var i = 0;
@@ -690,7 +705,6 @@ function factor(mode: number): string {
     if (symKind == symLParen) { 
         nextSym();
         var code = expression();
-        var priority = getCodePriority(code);
         checkSym(symRParen, ")");
         return getCodePriority(code) + getCodeType(code) + "R" + getCodeBody(code);
     } else if (symKind == symIdent) {
@@ -714,23 +728,23 @@ function unaryExpression(): string {
     var lastPriority = "9";
     var nParens = 0;
     while (symKind == symAddOp || symKind == symUnaryOp) {
-        var opPriority = "2";
+        var uopPriority = "2";
         if (operator == '!') {
-            opPriority = "5";
+            uopPriority = "5";
         } else if (operator == '~') {
             operator = "(-1) ^ ";
-            opPriority = "5";
+            uopPriority = "5";
         }
-        if (opPriority > lastPriority) {
+        if (uopPriority > lastPriority) {
             ops = ops + "(" + operator;
             nParens = nParens + 1;
         } else {
             ops = ops + operator;
         }
         nextSym();
-        lastPriority = opPriority;
+        lastPriority = uopPriority;
         if (firstPriority == "")
-            firstPriority = opPriority;
+            firstPriority = uopPriority;
     }
     var code = factor(1);       // factor(1) は右辺値であることを示す
     var priority = getCodePriority(code);
@@ -790,7 +804,7 @@ function checkBinOpType(op: string, type1: string, type2: string): string {
 }
 
 function genBianryOp(code1: string, op: string, code2: string): string {
-    var opPriority = getHidePriority(op);
+    var bopPriority = getHidePriority(op);
 
     var priority1 = getCodePriority(code1);
     var type1 = getCodeType(code1);
@@ -800,12 +814,12 @@ function genBianryOp(code1: string, op: string, code2: string): string {
     var type2 = getCodeType(code2);
     code2 = getCodeBody(code2);
     var etype = checkBinOpType(op, type1, type2);
-    if (priority1 > opPriority || ((priority1 == "4") && (opPriority == "4")) )
+    if (priority1 > bopPriority || ((priority1 == "4") && (bopPriority == "4")) )
         code1 = "(" + code1 + ")";
-    if (priority2 >= opPriority)
+    if (priority2 >= bopPriority)
         code2 = "(" + code2 + ")";
 
-    return opPriority + etype + "R" + code1 + op + code2;
+    return bopPriority + etype + "R" + code1 + op + code2;
 }
 
 expression = function (): string {
@@ -1031,13 +1045,14 @@ function checkFunction(): string {
 function varStatement() : void {
     checkSym(symIdent, "識別子(3)");
     var varName = ident;
+    var typeName: string;
     if(symKind == symColon) {
         nextSym();
         if (symKind == symNumber || symKind == symString) {
-            var typeName = checkType();
+            typeName = checkType();
             register(varName, typeName, currentLevel);
         } else if (symKind == symLParen) {
-            var typeName = checkFunction();
+            typeName = checkFunction();
             register(varName, typeName, currentLevel);
         } else {
             syntaxError('型名が必要です(4)');
@@ -1090,13 +1105,13 @@ function whileStatement(): void {
     var cmpCode = expression();
     if (getCodeType(cmpCode) != "n")
         syntaxError("数値型の式が必要です(3)");
-    var tempCode = popTempCode();    checkSym(symRParen, ")");
+    var tempCode1 = popTempCode();    checkSym(symRParen, ")");
 
     genLabel(label); // ループの戻り
     statement();
     genLabel(label + 1); // continue用ラベル
 
-    pushTempCode(tempCode);
+    pushTempCode(tempCode1);
     genCode("if (" + getCodeBody(cmpCode) + ") goto " + getLabel(label));
     genLabel(label + 2); // break用ラベル
     currentBreakLabel = saveBreakLabel;
@@ -1227,7 +1242,6 @@ if (version() > 0) {
     insert("コンパイル中…しばらくお待ち下さい");
     selectall();
     disabledraw();
-    selectall();
     _delete();
     var t1 = tickcount();
     compile(sx);

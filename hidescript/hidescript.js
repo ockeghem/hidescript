@@ -124,11 +124,40 @@ var identsType = new Array();
 var identsLevel = new Array();
 var nIdents = 0;
 var currentFuncType = ""; // 現在の関数の型 s n v のいずれか
+function syntaxError(msg) {
+    message(msg);
+    message(wcsmidstr(srcText, 0, 100));
+    symKind = symEOF;
+    endmacro();
+}
+function searchIdent(varName) {
+    var i = nIdents - 1;
+    while (i >= 0) {
+        if (identsName[i] == varName)
+            return i;
+        i = i - 1;
+    }
+    return -1;
+}
+function duplicateCheck(varName, level) {
+    var pos = searchIdent(varName);
+    if (pos < 0)
+        return 1;
+    if (identsLevel[pos] == level)
+        return 0;
+    if (identsLevel[pos] == 0)
+        return 1;
+    if (level == 0)
+        return 1;
+    return 0; //値が重複していて、レベルが 引数とローカルの場合は NG
+}
 /*
  * typeName : n .. number  s .. string   f .. function
  *
  */
 function register(varName, typeName, level) {
+    if (!duplicateCheck(varName, level))
+        syntaxError("識別子 " + varName + " が重複して宣言されています");
     identsName[nIdents] = varName;
     identsType[nIdents] = typeName;
     identsLevel[nIdents] = level;
@@ -172,20 +201,14 @@ registerBuiltinFunction("wcsleftstr", "ssn");
 registerBuiltinFunction("wcslen", "ns");
 registerBuiltinFunction("wcsmidstr", "ssnN");
 registerBuiltinFunction("wcsstrrstr", "nss");
-function syntaxError(msg) {
-    message(msg);
-    message(wcsmidstr(srcText, 0, 100));
-    symKind = symEOF;
-    endmacro();
+function isAlpha(chx) {
+    return (chx >= "A" && chx <= "Z") || (chx >= "a" && chx <= "z");
 }
-function isAlpha(ch) {
-    return (ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z");
+function isAlnum(chx) {
+    return (chx >= "A" && chx <= "Z") || (chx >= "a" && chx <= "z") || (chx >= "0" && chx <= "9");
 }
-function isAlnum(ch) {
-    return (ch >= "A" && ch <= "Z") || (ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9");
-}
-function isDigit(ch) {
-    return (ch >= "0" && ch <= "9");
+function isDigit(chx) {
+    return (chx >= "0" && chx <= "9");
 }
 function nextChar() {
     ch = wcsmidstr(srcText, 0, 1);
@@ -449,15 +472,6 @@ function checkSym(sym, symStr) {
     }
     syntaxError(symStr + 'が必要です');
 }
-function searchIdent(varName) {
-    var i = nIdents - 1;
-    while (i >= 0) {
-        if (identsName[i] == varName)
-            return i;
-        i = i - 1;
-    }
-    return -1;
-}
 function dumpIdents() {
     insert("// --------------------\n");
     var i = 0;
@@ -691,7 +705,6 @@ function factor(mode) {
     if (symKind == symLParen) {
         nextSym();
         var code = expression();
-        var priority = getCodePriority(code);
         checkSym(symRParen, ")");
         return getCodePriority(code) + getCodeType(code) + "R" + getCodeBody(code);
     }
@@ -718,15 +731,15 @@ function unaryExpression() {
     var lastPriority = "9";
     var nParens = 0;
     while (symKind == symAddOp || symKind == symUnaryOp) {
-        var opPriority = "2";
+        var uopPriority = "2";
         if (operator == '!') {
-            opPriority = "5";
+            uopPriority = "5";
         }
         else if (operator == '~') {
             operator = "(-1) ^ ";
-            opPriority = "5";
+            uopPriority = "5";
         }
-        if (opPriority > lastPriority) {
+        if (uopPriority > lastPriority) {
             ops = ops + "(" + operator;
             nParens = nParens + 1;
         }
@@ -734,9 +747,9 @@ function unaryExpression() {
             ops = ops + operator;
         }
         nextSym();
-        lastPriority = opPriority;
+        lastPriority = uopPriority;
         if (firstPriority == "")
-            firstPriority = opPriority;
+            firstPriority = uopPriority;
     }
     var code = factor(1); // factor(1) は右辺値であることを示す
     var priority = getCodePriority(code);
@@ -794,7 +807,7 @@ function checkBinOpType(op, type1, type2) {
     return etype;
 }
 function genBianryOp(code1, op, code2) {
-    var opPriority = getHidePriority(op);
+    var bopPriority = getHidePriority(op);
     var priority1 = getCodePriority(code1);
     var type1 = getCodeType(code1);
     code1 = getCodeBody(code1);
@@ -802,11 +815,11 @@ function genBianryOp(code1, op, code2) {
     var type2 = getCodeType(code2);
     code2 = getCodeBody(code2);
     var etype = checkBinOpType(op, type1, type2);
-    if (priority1 > opPriority || ((priority1 == "4") && (opPriority == "4")))
+    if (priority1 > bopPriority || ((priority1 == "4") && (bopPriority == "4")))
         code1 = "(" + code1 + ")";
-    if (priority2 >= opPriority)
+    if (priority2 >= bopPriority)
         code2 = "(" + code2 + ")";
-    return opPriority + etype + "R" + code1 + op + code2;
+    return bopPriority + etype + "R" + code1 + op + code2;
 }
 expression = function () {
     var code = unaryExpression();
@@ -1032,14 +1045,15 @@ function checkFunction() {
 function varStatement() {
     checkSym(symIdent, "識別子(3)");
     var varName = ident;
+    var typeName;
     if (symKind == symColon) {
         nextSym();
         if (symKind == symNumber || symKind == symString) {
-            var typeName = checkType();
+            typeName = checkType();
             register(varName, typeName, currentLevel);
         }
         else if (symKind == symLParen) {
-            var typeName = checkFunction();
+            typeName = checkFunction();
             register(varName, typeName, currentLevel);
         }
         else {
@@ -1090,12 +1104,12 @@ function whileStatement() {
     var cmpCode = expression();
     if (getCodeType(cmpCode) != "n")
         syntaxError("数値型の式が必要です(3)");
-    var tempCode = popTempCode();
+    var tempCode1 = popTempCode();
     checkSym(symRParen, ")");
     genLabel(label); // ループの戻り
     statement();
     genLabel(label + 1); // continue用ラベル
-    pushTempCode(tempCode);
+    pushTempCode(tempCode1);
     genCode("if (" + getCodeBody(cmpCode) + ") goto " + getLabel(label));
     genLabel(label + 2); // break用ラベル
     currentBreakLabel = saveBreakLabel;
@@ -1230,7 +1244,6 @@ if (version() > 0) {
     insert("コンパイル中…しばらくお待ち下さい");
     selectall();
     disabledraw();
-    selectall();
     _delete();
     var t1 = tickcount();
     compile(sx);
