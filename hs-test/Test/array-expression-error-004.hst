@@ -1,0 +1,7 @@
+//message=[が必要です
+//status=1
+//
+var a : string[];
+
+insertln(a);  // 配列そのままを呼び出すことはできない
+quit();

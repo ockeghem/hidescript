@@ -1,0 +1,9 @@
+//message=識別子 foo が重複して宣言されています
+//status=1
+//
+function foo(a : number): void {
+}
+
+var foo = 1;	// 関数と変数の重複も駄目
+
+quit();

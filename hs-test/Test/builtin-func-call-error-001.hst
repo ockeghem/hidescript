@@ -1,7 +1,0 @@
-//message=[が必要です
-//status=1
-//
-var a : string[];
-
-insertln(a);
-quit();

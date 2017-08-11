@@ -1,0 +1,11 @@
+//status=0
+//diff=1
+//exec=1
+var foo: (s: number) => number;
+foo = function(x: number): number { return x; }
+
+var x = foo(1);
+
+insertln(x);
+insertln("done");
+saveexit();

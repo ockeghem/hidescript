@@ -1,0 +1,7 @@
+//message=識別子 a が重複して宣言されています
+//status=1
+//
+var a: number;
+var a: number;
+
+quit();
