@@ -1,4 +1,5 @@
 /** 秀スクリプト ... TypeScriptライクなスクリプト言語から秀丸マクロを生成
+ * v1.0.0
  */
 var symNew = 0;
 var symVar = 1;
