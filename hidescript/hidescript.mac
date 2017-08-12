@@ -174,7 +174,7 @@ call registerBuiltinFunction  "down", "v";
 call registerBuiltinFunction  "enabledraw", "v";
 call registerBuiltinFunction  "endmacro", "v";
 call registerBuiltinFunction  "findhidemaru", "ns";
-call registerBuiltinFunction  "gettext", "snnnn";
+call registerBuiltinFunction  "gettext", "snnnnN";
 call registerBuiltinFunction  "insert", "vs";
 call registerBuiltinFunction  "insertln", "";
 call registerBuiltinFunction  "macrodir", "s";
@@ -1507,7 +1507,7 @@ return "";
 _end_compile:
 if ( version>0) {
 selectall ;
-$sx=gettext( seltopx, seltopy, selendx, selendy);
+$sx=gettext( seltopx, seltopy, selendx, selendy, 1);
 $filebase=basename;
 if ( $filebase=="") {
 message  "まずセーブして下さい";
@@ -1522,7 +1522,6 @@ openfile  $filename;
 } else {
 setactivehidemaru  #winno;
 }
-selectall ;
 insert  "コンパイル中…しばらくお待ち下さい";
 selectall ;
 disabledraw ;

@@ -168,7 +168,7 @@ registerBuiltinFunction("down", "v");
 registerBuiltinFunction("enabledraw", "v");
 registerBuiltinFunction("endmacro", "v");
 registerBuiltinFunction("findhidemaru", "ns");
-registerBuiltinFunction("gettext", "snnnn");
+registerBuiltinFunction("gettext", "snnnnN");
 registerBuiltinFunction("insert", "vs");
 registerBuiltinFunction("insertln", "");    // 特殊組み込み関数
 registerBuiltinFunction("macrodir", "s");
@@ -1222,7 +1222,7 @@ function compile(src: string): string {
 
 if (version() > 0) {
     selectall();
-    var sx = gettext(seltopx(), seltopy(), selendx(), selendy());
+    var sx = gettext(seltopx(), seltopy(), selendx(), selendy(), 1);
 
     var filebase = basename();
     if (filebase == "") {
@@ -1238,7 +1238,6 @@ if (version() > 0) {
     } else {
         setactivehidemaru(winno);
     }
-    selectall();
     insert("コンパイル中…しばらくお待ち下さい");
     selectall();
     disabledraw();
@@ -1335,7 +1334,7 @@ function version() : number {
     return 0;
 }
 
-function gettext(x1: number, y1: number, x2: number, y2: number): string {
+function gettext(x1: number, y1: number, x2: number, y2: number, n = 0): string {
     return "";
 } // dummy
 

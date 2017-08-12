@@ -177,7 +177,7 @@ registerBuiltinFunction("down", "v");
 registerBuiltinFunction("enabledraw", "v");
 registerBuiltinFunction("endmacro", "v");
 registerBuiltinFunction("findhidemaru", "ns");
-registerBuiltinFunction("gettext", "snnnn");
+registerBuiltinFunction("gettext", "snnnnN");
 registerBuiltinFunction("insert", "vs");
 registerBuiltinFunction("insertln", ""); // 特殊組み込み関数
 registerBuiltinFunction("macrodir", "s");
@@ -1224,7 +1224,7 @@ function compile(src) {
 }
 if (version() > 0) {
     selectall();
-    var sx = gettext(seltopx(), seltopy(), selendx(), selendy());
+    var sx = gettext(seltopx(), seltopy(), selendx(), selendy(), 1);
     var filebase = basename();
     if (filebase == "") {
         message("まずセーブして下さい");
@@ -1240,7 +1240,6 @@ if (version() > 0) {
     else {
         setactivehidemaru(winno);
     }
-    selectall();
     insert("コンパイル中…しばらくお待ち下さい");
     selectall();
     disabledraw();
@@ -1321,7 +1320,8 @@ function wcsstrrstr(a, b) {
 function version() {
     return 0;
 }
-function gettext(x1, y1, x2, y2) {
+function gettext(x1, y1, x2, y2, n) {
+    if (n === void 0) { n = 0; }
     return "";
 } // dummy
 function selectall() {

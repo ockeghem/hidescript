@@ -74,12 +74,12 @@ C:> node hidescript.js foo.hs
 ## (2)秀丸マクロとして実行する
 - hidescript.mac を hs.mac にリネームして秀丸上でマクロ登録しておく
 - foo.hsを秀丸で開く
-- ショートカットキー等によりhidescript.macを実行する
-- foo.macのウィンドウが開き、コンパイル結果が挿入される
+- ショートカットキー等によりhs.macを実行する
+- foo.macのウィンドウが開き、コンパイル結果が挿入、保存される
 - foo.macをショートカット等で実行する
 
 ※ hidescript.ts は上記方法で秀スクリプトとしてコンパイルできます。  
-※ hidescript.mac を hs.mac とリネームして登録する理由は、前記コンパイル時にコンパイラが上書きされることを防ぐためです。
+※ hidescript.mac を hs.mac とリネームして登録する理由は、hidescript.tsコンパイル時にコンパイラが上書きされることを防ぐためです。
 
 # [文法](docs/syntax.md) はこちら
 
