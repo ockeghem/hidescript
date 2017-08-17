@@ -1,0 +1,8 @@
+//status=0
+//diff=1
+//exec=1
+//
+searchdown("xxx", word);
+
+insertln("done");
+saveexit();

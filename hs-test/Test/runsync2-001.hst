@@ -1,0 +1,9 @@
+//status=0
+//diff=1
+//exec=1
+//
+
+runsync2("calc.exe");
+
+insertln("done");
+saveexit();

@@ -1,0 +1,8 @@
+//status=0
+//diff=1
+//exec=1
+//
+searchdown("alt=\"Yahoo! JAPAN\".*<span>([0-9,]+)</span>.*alt=\"Google\".*<span>([0-9,]+)</span>" , regular, nocasesense, hilight);
+
+insertln("done");
+saveexit();

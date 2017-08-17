@@ -1,0 +1,6 @@
+//status=1
+//message=秀丸の「文」を関数として呼び出しました
+//
+var s = insert("foo");
+
+quit();

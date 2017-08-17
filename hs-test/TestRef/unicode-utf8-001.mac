@@ -1,0 +1,32 @@
+﻿$s="abc\\¥漢字尾骶骨𠮷野家";
+#len=wcslen( $s);
+#n=0;
+goto _LL1
+_LL0:
+#cp=unicode( wcsmidstr( $s, #n, 1));
+$utf8="";
+if ( #cp<0x80) {
+$utf8=sprintf( "%02x", #cp);
+} else {
+if ( #cp<0x800) {
+$utf8=sprintf( "%02x", 0xc0|(#cp/64))+sprintf( "%02x", 0x80|(#cp&0x3f));
+} else {
+if ( #cp>=0xd800&&#cp<=0xdfff) {
+#n=#n+1;
+#cp2=unicode( wcsmidstr( $s, #n, 1));
+#x=0x10000+((#cp-0xd800)*0x400+(#cp2-0xdc00));
+$utf8=sprintf( "%02x", 0xf0|(#x/262144))+sprintf( "%02x", 0x80|(#x/4096&0x3f))+sprintf( "%02x", 0x80|(#x/64&0x3f))+sprintf( "%02x", 0x80|(#x&0x3f));
+} else {
+$utf8=sprintf( "%02x", 0xe0|(#cp/4096))+sprintf( "%02x", 0x80|(#cp/64&0x3f))+sprintf( "%02x", 0x80|(#cp&0x3f));
+}
+}
+}
+insert sprintf( "U+%04x U+%04x", #cp, #cp2)+"\n";
+insert $utf8+"\n";
+#n=#n+1;
+_LL1:
+if (#n<#len) goto _LL0
+_LL2:
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

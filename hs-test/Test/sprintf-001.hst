@@ -1,0 +1,10 @@
+//status=0
+//diff=1
+//exec=1
+//
+var n = 0x0;
+var s = sprintf("%04x", 0x1f53);
+insertln(s);
+
+insertln("done");
+saveexit();

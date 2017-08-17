@@ -1,0 +1,15 @@
+//status=0
+//diff=1
+//exec=1
+//
+var n = 0;
+insertln(n);
+
+n = 12345;
+insertln(n);
+
+n = -567;
+insertln(n);
+
+insertln("done");
+saveexit();

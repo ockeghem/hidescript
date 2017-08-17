@@ -1,0 +1,9 @@
+﻿#n=0;
+insert str(#n)+"\n";
+#n=12345;
+insert str(#n)+"\n";
+#n=-567;
+insert str(#n)+"\n";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

@@ -1,0 +1,32 @@
+//status=0
+//diff=1
+//exec=1
+//
+
+var s = "abc\\¥漢字尾骶骨𠮷野家";
+var len = wcslen(s);
+var n = 0;
+while (n < len) {
+  var cp = unicode(wcsmidstr(s, n, 1));
+  var utf8 = "";
+
+  if (cp < 0x80) {
+    utf8 = sprintf("%02x", cp);
+  } else if (cp < 0x800) {
+    utf8 = sprintf("%02x", 0xc0 | (cp / 64)) + sprintf("%02x", 0x80 | (cp & 0x3f));
+  } else if (cp >= 0xd800 && cp <= 0xdfff) {
+    n = n + 1;
+    var cp2 = unicode(wcsmidstr(s, n, 1));
+    var x = 0x10000 + (cp - 0xd800) * 0x400 + (cp2 - 0xdc00);
+    utf8 = sprintf("%02x", 0xf0 | (x / 262144)) + sprintf("%02x", 0x80 | ((x / 4096) & 0x3f)) + sprintf("%02x", 0x80 | ((x / 64) & 0x3f)) + sprintf("%02x", 0x80 | (x & 0x3f));
+  } else {
+    utf8 = sprintf("%02x", 0xe0 | (cp / 4096)) + sprintf("%02x", 0x80 | ((cp / 64) & 0x3f)) + sprintf("%02x", 0x80 | (cp & 0x3f));
+  }
+
+  insertln(sprintf("U+%04x U+%04x", cp, cp2));
+  insertln(utf8);
+  n = n + 1;
+}
+
+insertln("done");
+saveexit();

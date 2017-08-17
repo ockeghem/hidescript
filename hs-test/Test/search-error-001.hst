@@ -1,0 +1,7 @@
+//status=1
+//message=不適切な検索オプション(wordx)
+//
+searchdown("xxx", wordx);
+
+insertln("done");
+saveexit();
