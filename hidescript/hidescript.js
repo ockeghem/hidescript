@@ -172,26 +172,31 @@ function registerBuiltinFunction(name, types) {
 // 以下、組み込み関数の宣言
 //
 registerBuiltinFunction("basename", "s");
+registerBuiltinFunction("closehidemaru", "vn");
 registerBuiltinFunction("_delete", "v");
 registerBuiltinFunction("disabledraw", "v");
 registerBuiltinFunction("down", "v");
 registerBuiltinFunction("enabledraw", "v");
 registerBuiltinFunction("endmacro", "v");
+registerBuiltinFunction("filename", "s");
 registerBuiltinFunction("findhidemaru", "ns");
 registerBuiltinFunction("gettext", "snnnnN");
+registerBuiltinFunction("grep", "vsss!");
 registerBuiltinFunction("insert", "vs");
 registerBuiltinFunction("insertln", ""); // 特殊組み込み関数
 registerBuiltinFunction("macrodir", "s");
 registerBuiltinFunction("message", "vs");
 registerBuiltinFunction("openfile", "vs");
 registerBuiltinFunction("quit", "v");
+registerBuiltinFunction("replaceall", "vss!");
 registerBuiltinFunction("result", "n");
 registerBuiltinFunction("run", "vs");
 registerBuiltinFunction("runsync", "vs");
 registerBuiltinFunction("runsync2", "vs");
 registerBuiltinFunction("save", "v");
+registerBuiltinFunction("saveas", "vs");
 registerBuiltinFunction("saveexit", "v");
-registerBuiltinFunction("searchdown", "vs");
+registerBuiltinFunction("searchdown", "vs!");
 registerBuiltinFunction("selectall", "v");
 registerBuiltinFunction("selendx", "n");
 registerBuiltinFunction("selendy", "n");
@@ -631,6 +636,8 @@ function genParameterCode(paramTypes) {
     if (symKind != symRParen) {
         while (1) {
             var paramType = wcsmidstr(paramTypes, 0, 1);
+            if (paramType == "!")
+                return paramCode;
             if (paramType == "")
                 syntaxError("パラメータが多すぎます");
             var codeParam = expression();
@@ -645,7 +652,8 @@ function genParameterCode(paramTypes) {
             nextSym();
         }
     }
-    if (paramTypes > "" && (paramTypes == "n" || paramTypes == "s"))
+    var firstParam = wcsmidstr(paramTypes, 0, 1);
+    if (paramTypes > "" && (firstParam == "n" || firstParam == "s"))
         syntaxError("パラメータが足りません");
     return paramCode;
 }
@@ -682,45 +690,53 @@ function builtinPrintln() {
         syntaxError("builtinPrintlnで予期しない型（コンパイラのバグ?）");
     }
 }
-function builtinSearch(funcName) {
-    var options = new Array();
-    var nOptions = 0;
+function builtinSearch(funcName, pos) {
+    // var options: string[] = new Array();
+    // var nOptions = 0;
     checkSym(symLParen, '(');
-    var keyword = expression();
-    if (symKind == symComma) {
-        do {
-            nextSym();
+    var paramCode = genParameterCode(wcsmidstr(identsType[pos], 2));
+    // var keyword = expression();
+    if (symKind == symIdent) {
+        while (1) {
+            // nextSym();
             checkSym(symIdent, "識別子");
             if (ident == "word" || ident == "casesense " || ident == "nocasesense"
                 || ident == "regular" || ident == "noregular" || ident == "fuzzy" || ident == "inselect"
                 || ident == "linknext" || ident == "hilight" || ident == "nohilight" || ident == "incolormarker") {
-                options[nOptions] = ident;
-                nOptions = nOptions + 1;
+                // options[nOptions] = ident;
+                // nOptions = nOptions + 1;
+                paramCode = paramCode + ident;
             }
             else
                 syntaxError("不適切な検索オプション(" + ident + ")");
             var dummy = ident;
-        } while (symKind == symComma);
-    }
-    checkSym(symRParen, ')');
-    if (getCodeType(keyword) != "s")
-        syntaxError("検索キーワードは文字列型が必要です");
-    var code = "0vR" + funcName + " " + getCodeBody(keyword);
-    if (nOptions > 0) {
-        var n = 0;
-        while (n < nOptions) {
-            code = code + ", " + options[n];
-            n = n + 1;
+            if (symKind != symComma)
+                break;
+            paramCode = paramCode + ",";
+            nextSym();
         }
     }
+    checkSym(symRParen, ')');
+    // if (getCodeType(keyword) != "s")
+    //    syntaxError("検索キーワードは文字列型が必要です");
+    var code = "0vR" + funcName + " " + paramCode;
+    /**    var code: string;
+        if (nOptions > 0) {
+            var n = 0;
+            while (n < nOptions) {
+                code = code + ", " + options[n];
+                n = n + 1;
+            }
+        }
+    **/
     return code;
 }
 function builtinFunction(pos, mode) {
     var funcName = identsName[pos];
     if (funcName == "insertln")
         return builtinPrintln();
-    if (funcName == "searchdown")
-        return builtinSearch(funcName);
+    if (funcName == "searchdown" || funcName == "grep" || funcName == "replaceall")
+        return builtinSearch(funcName, pos);
     if (wcsleftstr(funcName, 1) == "_") {
         funcName = wcsmidstr(funcName, 1);
     }
@@ -1293,10 +1309,10 @@ if (version() > 0) {
     }
     var pos = wcsstrrstr(filebase, ".");
     filebase = wcsleftstr(filebase, pos) + ".mac";
-    var filename = macrodir() + "\\" + filebase;
-    var winno = findhidemaru(filename);
+    var fname = macrodir() + "\\" + filebase;
+    var winno = findhidemaru(fname);
     if (winno == -1) {
-        openfile(filename);
+        openfile(fname);
     }
     else {
         setactivehidemaru(winno);
@@ -1322,8 +1338,8 @@ if (!srcfile) {
     process.exit(1);
 }
 var ext = path.extname(srcfile);
-var fname = path.basename(srcfile, ext);
-var outfile = path.format({ dir: macrodir(), name: fname, ext: ".mac" }); // 出力ファイルの組み立て
+var filename = path.basename(srcfile, ext);
+var outfile = path.format({ dir: macrodir(), name: filename, ext: ".mac" }); // 出力ファイルの組み立て
 try {
     var src = fs.readFileSync(srcfile, 'utf8');
     var label = 'compile-time';
@@ -1402,10 +1418,10 @@ function selendy() {
 function basename() {
     return "";
 } // dummy
-function findhidemaru(filename) {
+function findhidemaru(fname) {
     return 0;
 } // dummy
-function openfile(filename) {
+function openfile(fname) {
 } // dummy
 function setactivehidemaru(winno) {
 } // dummy
