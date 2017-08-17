@@ -1,7 +1,7 @@
 //message=パラメータが足りません
 //status=1
 //
-function foo(n : number) { }
+function foo(n : number, m : number) { }
 
 foo();	// パラメータが足りない
 quit();
