@@ -116,7 +116,7 @@ var srcText;
 var symKind;
 var operator; // 演算子 ">=" 等
 var ident; // 識別子
-var digitValue; // 数値
+var digitValue; // 文字列のまま扱っても良かったので変更する  number; // 数値
 var stringValue; // 文字列リテラル
 // 以下は識別子情報
 var currentLevel = 0;
@@ -185,17 +185,24 @@ registerBuiltinFunction("macrodir", "s");
 registerBuiltinFunction("message", "vs");
 registerBuiltinFunction("openfile", "vs");
 registerBuiltinFunction("quit", "v");
+registerBuiltinFunction("result", "n");
+registerBuiltinFunction("run", "vs");
+registerBuiltinFunction("runsync", "vs");
+registerBuiltinFunction("runsync2", "vs");
 registerBuiltinFunction("save", "v");
 registerBuiltinFunction("saveexit", "v");
+registerBuiltinFunction("searchdown", "vs");
 registerBuiltinFunction("selectall", "v");
 registerBuiltinFunction("selendx", "n");
 registerBuiltinFunction("selendy", "n");
 registerBuiltinFunction("seltopx", "n");
 registerBuiltinFunction("seltopy", "n");
 registerBuiltinFunction("setactivehidemaru", "vn");
+registerBuiltinFunction("sprintf", "ssNNNN");
 registerBuiltinFunction("str", "sn");
 registerBuiltinFunction("tickcount", "n");
 registerBuiltinFunction("tolower", "ss");
+registerBuiltinFunction("unicode", "ns");
 registerBuiltinFunction("val", "ns");
 registerBuiltinFunction("version", "n");
 registerBuiltinFunction("wcsleftstr", "ssn");
@@ -210,6 +217,9 @@ function isAlnum(chx) {
 }
 function isDigit(chx) {
     return (chx >= "0" && chx <= "9");
+}
+function isHex(chx) {
+    return (chx >= "A" && chx <= "F") || (chx >= "a" && chx <= "f") || (chx >= "0" && chx <= "9");
 }
 function nextChar() {
     ch = wcsmidstr(srcText, 0, 1);
@@ -291,7 +301,13 @@ function nextSym() {
                 digit = digit + ch;
                 nextChar();
             } while (isDigit(ch));
-            digitValue = val(digit);
+            if (digit == "0" && tolower(ch) == "x") {
+                do {
+                    digit = digit + ch;
+                    nextChar();
+                } while (isHex(ch));
+            }
+            digitValue = digit; // 文字列に変更   val(digit);
             symKind = symDigit;
             return;
         }
@@ -535,7 +551,10 @@ function genVar(pos) {
     var typeChar = varType;
     var varPrefix = "$";
     var array = 0;
-    if (typeChar == "n") {
+    if (typeChar == "s" || typeChar == "x") {
+        // 何もしない
+    }
+    else if (typeChar == "n") {
         varPrefix = "#";
     }
     else if (typeChar == "S") {
@@ -546,6 +565,9 @@ function genVar(pos) {
         array = 1;
         typeChar = "n";
         varPrefix = "#";
+    }
+    else {
+        syntaxError("不正な型情報（コンパイラのバグ）");
     }
     var code;
     if (identsLevel[pos] == 0) {
@@ -660,17 +682,55 @@ function builtinPrintln() {
         syntaxError("builtinPrintlnで予期しない型（コンパイラのバグ?）");
     }
 }
-function builtinFunction(pos) {
+function builtinSearch(funcName) {
+    var options = new Array();
+    var nOptions = 0;
+    checkSym(symLParen, '(');
+    var keyword = expression();
+    if (symKind == symComma) {
+        do {
+            nextSym();
+            checkSym(symIdent, "識別子");
+            if (ident == "word" || ident == "casesense " || ident == "nocasesense"
+                || ident == "regular" || ident == "noregular" || ident == "fuzzy" || ident == "inselect"
+                || ident == "linknext" || ident == "hilight" || ident == "nohilight" || ident == "incolormarker") {
+                options[nOptions] = ident;
+                nOptions = nOptions + 1;
+            }
+            else
+                syntaxError("不適切な検索オプション(" + ident + ")");
+            var dummy = ident;
+        } while (symKind == symComma);
+    }
+    checkSym(symRParen, ')');
+    if (getCodeType(keyword) != "s")
+        syntaxError("検索キーワードは文字列型が必要です");
+    var code = "0vR" + funcName + " " + getCodeBody(keyword);
+    if (nOptions > 0) {
+        var n = 0;
+        while (n < nOptions) {
+            code = code + ", " + options[n];
+            n = n + 1;
+        }
+    }
+    return code;
+}
+function builtinFunction(pos, mode) {
     var funcName = identsName[pos];
     if (funcName == "insertln")
         return builtinPrintln();
+    if (funcName == "searchdown")
+        return builtinSearch(funcName);
     if (wcsleftstr(funcName, 1) == "_") {
         funcName = wcsmidstr(funcName, 1);
     }
     var code;
     var funcType = wcsmidstr(identsType[pos], 1, 1);
-    if (funcType == "v")
+    if (funcType == "v") {
+        if (mode)
+            syntaxError("秀丸の「文」を関数として呼び出しました");
         code = funcName + " ";
+    }
     else if (wcslen(identsType[pos]) == 2)
         code = funcName;
     else
@@ -696,7 +756,7 @@ function variableOrFunctionCall(mode) {
         return functionCall(pos, type, mode);
     }
     else if (type == "F") {
-        return builtinFunction(pos);
+        return builtinFunction(pos, mode);
     }
     else {
         syntaxError("不正な識別子です（コンパイラのバグ?）");
@@ -715,7 +775,7 @@ function factor(mode) {
     else if (symKind == symDigit) {
         var dValue = digitValue;
         nextSym();
-        return "0nR" + str(dValue);
+        return "0nR" + dValue; // str() を削除
     }
     else if (symKind == symStringLiteral) {
         var sValue = stringValue;
@@ -752,7 +812,7 @@ function unaryExpression() {
         if (firstPriority == "")
             firstPriority = uopPriority;
     }
-    var code = factor(1); // factor(1) は右辺値であることを示す
+    var code = factor(1); // 引数の 1 は右辺値であることを示す
     var priority = getCodePriority(code);
     var type1 = getCodeType(code);
     var LRvalue = getCodeLR(code);
