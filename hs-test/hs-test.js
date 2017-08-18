@@ -31,7 +31,7 @@ function getTestConditions(srcfile) {
         console.error(err);
         process.exit(1);
     }
-    var keys = ['message', 'status', 'diff', 'exec'];
+    var keys = ['message', 'status', 'diff', 'exec', 'expected'];
     var props = new Array();
     keys.forEach(function (key) {
         var result = getProperty(key, data);
@@ -87,12 +87,14 @@ function compareMacro(file1, file2) {
     }
 }
 var ok_count = 0;
+var ex_count = 0;
 var ng_count = 0;
 function doIt(file) {
     var path = testDir + "\\" + file;
     var cond = getTestConditions(path);
     var macrofile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".mac");
     var outfile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".out");
+    var expected = false;
     try {
         fs.unlinkSync(macrofile); // コンパイル結果のマクロファイルを削除しておく
     }
@@ -138,6 +140,9 @@ function doIt(file) {
     else {
         s_result += "-";
     }
+    if (cond['expected'] == "1") {
+        expected = true;
+    }
     if (result.status == 0) {
         message = ""; // メッセージは削除しておく
         try {
@@ -168,6 +173,10 @@ function doIt(file) {
         s_ok = "OK";
         ok_count++;
     }
+    else if (expected) {
+        s_ok = "EX";
+        ex_count++;
+    }
     else {
         s_ok = "NG";
         ng_count++;
@@ -188,6 +197,7 @@ else {
     }).forEach(doIt);
 }
 console.log("OK count = " + ok_count);
+console.log("EX count = " + ex_count + "  (Expected Fail)");
 console.log("NG count = " + ng_count);
 process.exit(0);
 //# sourceMappingURL=hs-test.js.map

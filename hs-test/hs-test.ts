@@ -35,7 +35,7 @@ function getTestConditions(srcfile: string) {
         console.error(err);
         process.exit(1);
     }
-    const keys = ['message', 'status', 'diff', 'exec'];
+    const keys = ['message', 'status', 'diff', 'exec', 'expected'];
     const props = new Array();
     keys.forEach(function (key) {
         let result = getProperty(key, data);
@@ -95,6 +95,7 @@ function compareMacro(file1: string, file2: string): string {
 }
 
 let ok_count = 0;
+let ex_count = 0;
 let ng_count = 0;
 
 function doIt(file : string): void {
@@ -102,6 +103,7 @@ function doIt(file : string): void {
     const cond = getTestConditions(path);
     const macrofile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".mac");
     const outfile = changeExt(process.cwd() + "\\" + testResult + "\\" + file, ".out");
+    let expected = false;
 
     try {
         fs.unlinkSync(macrofile); // コンパイル結果のマクロファイルを削除しておく
@@ -143,7 +145,9 @@ function doIt(file : string): void {
     } else {
         s_result += "-";
     }
-
+    if (cond['expected'] == "1") {
+        expected = true;
+    }
     if (result.status == 0) {  // コンパイルが成功したら実行してみる
         message = ""; // メッセージは削除しておく
         try {
@@ -171,6 +175,9 @@ function doIt(file : string): void {
     if (ok) {
         s_ok = "OK";
         ok_count++;
+    } else if (expected) {
+        s_ok = "EX";
+        ex_count++;
     } else {
         s_ok = "NG";
         ng_count++;
@@ -192,6 +199,7 @@ if (argv.length >= 3) {
 }
 
 console.log("OK count = " + ok_count);
+console.log("EX count = " + ex_count + "  (Expected Fail)");
 console.log("NG count = " + ng_count);
 
 process.exit(0);

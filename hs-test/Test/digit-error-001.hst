@@ -1,5 +1,6 @@
 //status=1
 //message=
+//expected=1
 //
 var n = 12345678901234567890;
 insertln(n);
