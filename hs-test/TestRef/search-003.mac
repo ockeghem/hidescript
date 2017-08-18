@@ -1,0 +1,4 @@
+﻿searchdown  "alt=\"Yahoo! JAPAN\".*<span>([0-9,]+)</span>.*alt=\"Google\".*<span>([0-9,]+)</span>",regular,nocasesense,hilight;
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

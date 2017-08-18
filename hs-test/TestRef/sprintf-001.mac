@@ -1,0 +1,6 @@
+﻿#n=0x0;
+$s=sprintf( "%04x", 0x1f53);
+insert $s+"\n";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

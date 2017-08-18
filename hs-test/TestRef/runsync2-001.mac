@@ -1,0 +1,4 @@
+﻿runsync2  "calc.exe";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

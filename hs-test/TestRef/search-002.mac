@@ -1,0 +1,4 @@
+﻿searchdown  "xxx",word;
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

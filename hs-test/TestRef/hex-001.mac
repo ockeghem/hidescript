@@ -1,0 +1,9 @@
+﻿#n=0x0;
+insert str(#n)+"\n";
+#n=0x1234;
+insert str(#n)+"\n";
+#n=0xfa0b;
+insert str(#n)+"\n";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done
