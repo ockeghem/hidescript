@@ -172,6 +172,7 @@ function doIt(file : string): void {
     } else {
         s_result += "-";
     }
+    let s_ok: string;
     if (ok) {
         s_ok = "OK";
         ok_count++;
@@ -182,7 +183,6 @@ function doIt(file : string): void {
         s_ok = "NG";
         ng_count++;
     }
-    var s_ok = ok ? "OK" : "NG";
     console.log(file + "\t" + s_ok + "\t" + s_result + "\t" + message);
 }
 

@@ -169,6 +169,7 @@ function doIt(file) {
     else {
         s_result += "-";
     }
+    var s_ok;
     if (ok) {
         s_ok = "OK";
         ok_count++;
@@ -181,7 +182,6 @@ function doIt(file) {
         s_ok = "NG";
         ng_count++;
     }
-    var s_ok = ok ? "OK" : "NG";
     console.log(file + "\t" + s_ok + "\t" + s_result + "\t" + message);
 }
 var argv = process.argv;
