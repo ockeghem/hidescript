@@ -204,6 +204,7 @@ registerBuiltinFunction("wcsleftstr", "ssn");
 registerBuiltinFunction("wcslen", "ns");
 registerBuiltinFunction("wcsmidstr", "ssnN");
 registerBuiltinFunction("wcsstrrstr", "nss");
+registerBuiltinFunction("wcsstrstr", "nss");
 
 
 

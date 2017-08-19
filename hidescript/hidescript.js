@@ -214,6 +214,7 @@ registerBuiltinFunction("wcsleftstr", "ssn");
 registerBuiltinFunction("wcslen", "ns");
 registerBuiltinFunction("wcsmidstr", "ssnN");
 registerBuiltinFunction("wcsstrrstr", "nss");
+registerBuiltinFunction("wcsstrstr", "nss");
 function isAlpha(chx) {
     return (chx >= "A" && chx <= "Z") || (chx >= "a" && chx <= "z");
 }
