@@ -1,0 +1,9 @@
+//status=0
+//diff=1
+//exec=1
+//
+var x = "aaabbbccc";
+var p = wcsstrstr(x, "bbb");
+insertln(p);
+insertln("done");
+saveexit();

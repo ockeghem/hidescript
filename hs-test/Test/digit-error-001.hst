@@ -6,4 +6,4 @@ var n = 12345678901234567890;
 insertln(n);
 
 insertln("done");
-quit();
+saveexit();

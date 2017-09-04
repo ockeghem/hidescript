@@ -1,0 +1,35 @@
+//status=0
+//diff=1
+//exec=1
+//
+
+var sx = "aaa\nbbb\r\nccc";
+
+var lines : string[];
+var n = 0;
+while (1) {
+  var p = wcsstrstr(sx, "\n");
+  if (p < 0) {
+    if (wcslen(sx) > 0) {
+      lines[n] = sx;
+      n = n + 1;
+    }
+    break;
+  }
+  var s1 = wcsmidstr(sx, 0, p);
+  var len = wcslen(s1);
+  if (wcsmidstr(s1, len - 1, 1) == "\r")
+    s1 = wcsmidstr(s1, 0, len - 1);
+  lines[n] = s1;
+  n = n + 1;
+  sx = wcsmidstr(sx, p + 1);
+}
+
+var i = 0;
+while (i < n) {
+  insertln(lines[i]);
+  i = i + 1;
+}
+
+insertln("done");
+saveexit();

@@ -1,0 +1,6 @@
+﻿$x="aaabbbccc";
+#p=wcsstrstr( $x, "bbb");
+insert str(#p)+"\n";
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done

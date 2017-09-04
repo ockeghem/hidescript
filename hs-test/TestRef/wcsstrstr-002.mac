@@ -1,0 +1,34 @@
+﻿$sx="aaa\nbbb\r\nccc";
+#n=0;
+goto _LL1
+_LL0:
+#p=wcsstrstr( $sx, "\n");
+if ( #p<0) {
+if ( wcslen( $sx)>0) {
+$lines[#n]=$sx;
+#n=#n+1;
+}
+goto _LL2
+}
+$s1=wcsmidstr( $sx, 0, #p);
+#len=wcslen( $s1);
+if ( wcsmidstr( $s1, #len-1, 1)=="\r") {
+$s1=wcsmidstr( $s1, 0, #len-1);
+}
+$lines[#n]=$s1;
+#n=#n+1;
+$sx=wcsmidstr( $sx, #p+1);
+_LL1:
+if (1) goto _LL0
+_LL2:
+#i=0;
+goto _LL4
+_LL3:
+insert $lines[#i]+"\n";
+#i=#i+1;
+_LL4:
+if (#i<#n) goto _LL3
+_LL5:
+insert "done"+"\n";
+saveexit ;
+// compileAndExecute::Done
