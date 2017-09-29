@@ -207,12 +207,15 @@ registerBuiltinFunction("sprintf", "ssNNNN");
 registerBuiltinFunction("str", "sn");
 registerBuiltinFunction("tickcount", "n");
 registerBuiltinFunction("tolower", "ss");
+registerBuiltinFunction("tozenkakuhira", "v");
+registerBuiltinFunction("tozenkakukata", "v");
 registerBuiltinFunction("unicode", "ns");
 registerBuiltinFunction("val", "ns");
 registerBuiltinFunction("version", "n");
 registerBuiltinFunction("wcsleftstr", "ssn");
 registerBuiltinFunction("wcslen", "ns");
 registerBuiltinFunction("wcsmidstr", "ssnN");
+registerBuiltinFunction("wcsrightstr", "ssn");
 registerBuiltinFunction("wcsstrrstr", "nss");
 registerBuiltinFunction("wcsstrstr", "nss");
 function isAlpha(chx) {
