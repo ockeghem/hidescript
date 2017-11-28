@@ -922,11 +922,9 @@ expression = function () {
         }
         stack[sp] = op;
         sp = sp + 1; // push(op); … shift処理
-        var code2 = unaryExpression();
-        stack[sp] = code2;
-        sp = sp + 1; // push(code2);
+        stack[sp] = unaryExpression();
+        sp = sp + 1; // 第2オペランドをpush
     }
-    var n = 0;
     while (sp >= 3) {
         stack[sp - 3] = genBianryOp(stack[sp - 3], stack[sp - 2], stack[sp - 1]);
         sp = sp - 2;
