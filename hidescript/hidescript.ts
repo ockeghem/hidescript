@@ -762,7 +762,20 @@ function builtinFunction(pos: number, mode: number): string {
 function variableOrFunctionCall(mode: number): string {
     var pos = searchIdent(ident);
     if (pos < 0) {
-        syntaxError(ident + "が見つかりません");
+        if (ident == "registerBuiltinFunction") {
+            nextSym();
+            checkSym(symLParen, "(");
+            var arg1 = stringValue;
+            nextSym();
+            checkSym(symComma, ',');
+            var arg2 = stringValue;
+            registerBuiltinFunction(arg1, arg2);
+            nextSym();
+            checkSym(symRParen, ')');
+            return "0vR// " + ident + " " + arg1 + " " + arg2;
+        } else {
+            syntaxError(ident + "が見つかりません");
+        }
     }
     nextSym();
     var type = wcsmidstr(identsType[pos], 0, 1);
